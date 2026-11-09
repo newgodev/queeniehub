@@ -229,8 +229,8 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
   return `<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="keywords" content="${esc(keywords)}"><link rel="canonical" href="${canonical}">
-<meta property="og:type" content="${ogType}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:site_name" content="Queenie 商業地產搜尋">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">
+<meta property="og:type" content="${ogType}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:site_name" content="Queenie 商業地產搜尋">${publicOrigin ? `<meta property="og:image" content="${publicOrigin}/og-cover.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="zh_HK">` : ''}
+<meta name="twitter:card" content="${publicOrigin ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">${publicOrigin ? `<meta name="twitter:image" content="${publicOrigin}/og-cover.png">` : ''}
 <link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${jsonLd}</script></head><body>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main>${body}</main>
@@ -447,6 +447,11 @@ function aggregatePage(type, value, list) {
 fs.rmSync(dist,{recursive:true,force:true}); mkdir(dist);
 write(path.join(dist,'styles.css'), fs.readFileSync(path.join(root,'styles.css'),'utf8'));
 write(path.join(dist,'app.js'), fs.readFileSync(path.join(root,'app.js'),'utf8'));
+const publicDir = path.join(root, 'public');
+for (const file of fs.readdirSync(publicDir)) {
+  if (file === 'manus-routes.json') continue;
+  fs.copyFileSync(path.join(publicDir, file), path.join(dist, file));
+}
 write(path.join(dist,'index.html'), home());
 write(path.join(dist,'buildings/index.html'), buildingsIndex());
 write(path.join(dist,'listings/index.html'), listingsPage());
