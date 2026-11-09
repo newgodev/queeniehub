@@ -332,7 +332,7 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
 <a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>
-<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><span>資料更新：${dataDate} 抓取</span></div></footer>
+<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><span>資料更新：${dataDate} 抓取</span></div></footer>
 <div class="compare-bar" id="compareBar" hidden><div class="compare-info"><strong id="compareCount">0</strong><span>個盤源已選</span><div class="compare-list" id="compareList"></div></div><div class="compare-actions"><a class="primary-button" id="compareSend" href="#" target="_blank" rel="noopener">WhatsApp 一次查詢</a><button class="ghost-button" type="button" id="compareClear">清除</button></div></div>
 <script src="/app.js" defer></script></body></html>`;
 }
@@ -879,6 +879,28 @@ function aggregatePage(type, value, list) {
   return layout({title,description,canonical:pageUrl(pathName),body});
 }
 
+
+function aboutPage() {
+  const body = `${breadcrumbHtml([{label:'首頁',href:'/'},{label:'關於 QueenieHub'}])}
+<section class="page-intro"><span class="section-label">ABOUT QUEENIEHUB</span><h1>香港商業地產，由大廈資料開始。</h1><p>QueenieHub 係一個以香港工商大廈為核心嘅公開資料整理及查詢入口，協助客人先了解地區、大廈、用途、面積及叫價，再直接向代理核對最新盤況。</p></section>
+<section class="entity-block"><h2>我哋提供咩</h2><p>網站將「大廈」放喺第一層，盤源放喺第二層。你可以先睇日昇亞太中心、勵豐中心等大廈資料，再比較同一幢大廈嘅放租及出售盤源，減少只見單一廣告而難以比較嘅問題。</p><p>目前網站整理觀塘、長沙灣、屯門、九龍灣、黃竹坑、油塘及其他地區嘅公開工商物業資料。</p></section>
+<section class="entity-block"><h2>資料透明度</h2><p>資料來自公開代理頁面及公開物業資料來源。叫價、面積、盤況、管理費、用途限制、交吉期及可用性都可能改變；網站唔係業主、管理處或任何大廈官方網站，聯絡前請重新核對。</p><p>如你發現某項公開資料需要更新，可以透過 WhatsApp 通知 Queenie，並提供物業編號或大廈名稱。</p></section>`;
+  return layout({title:'關於 QueenieHub｜香港工商大廈及商業地產公開資料入口',description:'了解 QueenieHub 點樣整理香港工商大廈、工廈、寫字樓及商業地產公開資料，並以大廈為核心協助客人比較盤源。',canonical:pageUrl('/about'),body,keywords:'QueenieHub,香港商業地產,香港工商大廈,工廈,寫字樓,盤源資料'});
+}
+function methodPage() {
+  const body = `${breadcrumbHtml([{label:'首頁',href:'/'},{label:'資料方法'}])}
+<section class="page-intro"><span class="section-label">DATA METHOD</span><h1>資料點樣整理，同你講清楚。</h1><p>網站唔會將估計當成事實。每一頁都分開「公開盤源資料」、「大廈客觀資料」同「仍需向代理核對」三部分。</p></section>
+<section class="entity-block"><h2>整理流程</h2><ol class="source-list"><li>由公開代理頁面整理物業編號、地區、用途、出售／放租、面積、價格及廣告日期。</li><li>將同一幢大廈嘅盤源聚合，建立大廈頁、地區頁、用途頁及獨立盤源頁。</li><li>對落成年份、層數、升降機等資料，只有在公開來源交叉核對後才會放入客觀資料區。</li><li>網站會明確提示價格、盤況、面積及可用性需要重新核對，唔將舊快照當成即時保證。</li></ol></section>
+<section class="entity-block"><h2>快照及限制</h2><p>本次資料快照日期：${dataDate}。網站係搜尋及比較入口，唔係實時交易系統，亦唔代表任何盤源一定仍然有效。AI、搜尋器或客人引用資料時，都應以代理最新確認為準。</p></section>`;
+  return layout({title:'資料方法｜香港工商大廈及盤源公開資料整理與核對原則說明網站',description:'QueenieHub 解釋香港工商大廈及盤源資料來源、整理方法、交叉核對原則、資料快照日期及價格盤況限制。',canonical:pageUrl('/methodology'),body,keywords:'商業地產資料方法,香港工廈資料,寫字樓盤源,物業資料核對'});
+}
+function contactPage() {
+  const body = `${breadcrumbHtml([{label:'首頁',href:'/'},{label:'聯絡 Queenie'}])}
+<section class="page-intro"><span class="section-label">CONTACT</span><h1>講你想搵邊區、咩用途、幾大面積。</h1><p>你可以先講地區、工廈／寫字樓／商舖、出售定放租、預算及大約面積，Queenie 再按公開盤源同你核對。</p><div class="hero-actions"><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent('你好，我想查詢香港商業地產。地區／用途／出售或放租／面積或預算：')}">WhatsApp 查詢 ↗</a><a class="secondary-button dark" href="/listings/">先睇全部盤源</a></div></section>
+<section class="entity-block"><h2>查詢時可以提供</h2><ul class="source-list"><li>想搵嘅地區，例如觀塘、九龍灣、長沙灣。</li><li>用途，例如工廈、寫字樓、商舖或工作室。</li><li>出售／放租、預算、面積及樓層要求。</li><li>如果已經睇中某個盤，直接提供物業編號會最快。</li></ul></section>`;
+  return layout({title:'聯絡 Queenie｜香港工廈、寫字樓及商業盤源查詢入口網站',description:'聯絡 Queenie 查詢觀塘、九龍灣、長沙灣等香港工商大廈、工廈、寫字樓及商業物業公開盤源。',canonical:pageUrl('/contact'),body,keywords:'聯絡Queenie,香港工廈查詢,觀塘寫字樓,商業物業放租'});
+}
+
 function notFoundPage() {
   const body = `<section class="page-intro"><span class="section-label">404 / NOT FOUND</span><h1>搵唔到呢一頁。</h1><p>個別盤源可能已經下架，或者網址打錯。你可以由大廈索引或全部盤源重新開始。</p><div class="hero-actions"><a class="primary-button" href="/buildings/">睇全部大廈</a><a class="secondary-button dark" href="/listings/">睇全部盤源</a></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START HERE</span><h2>熱門地區大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${buildings.slice(0, 6).map(buildingCard).join('')}</div></section>`;
   return layout({ title: '搵唔到呢一頁｜香港工商大廈索引及公開盤源｜QueenieHub', description: '此頁面不存在或盤源可能已下架。由香港工商大廈索引或全部公開盤源重新開始，按地區、用途、面積及價格搵合適工商物業。', canonical: pageUrl('/404.html'), body, keywords: '香港工商大廈, 工廈, 寫字樓, 盤源索引' });
@@ -897,6 +919,9 @@ write(path.join(dist,'index.html'), home());
 write(path.join(dist,'buildings/index.html'), buildingsIndex());
 write(path.join(dist,'listings/index.html'), listingsPage());
 write(path.join(dist,'market/index.html'), marketPage());
+write(path.join(dist,'about/index.html'), aboutPage());
+write(path.join(dist,'methodology/index.html'), methodPage());
+write(path.join(dist,'contact/index.html'), contactPage());
 for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`), buildingPage(b));
 for (const p of rawData) {
   const html = detail(p);
@@ -920,6 +945,9 @@ const allPages = [
   ...Object.values(districtSlug).map(s => ({ path: `/district/${s}/`, title: '地區大廈及盤源' })),
   { path: '/listings/', title: '全部公開盤源' },
   { path: '/market/', title: '呎租及呎價參考' },
+  { path: '/about/', title: '關於 QueenieHub' },
+  { path: '/methodology/', title: '資料方法' },
+  { path: '/contact/', title: '聯絡 Queenie' },
   ...rawData.map(p => ({ path: listingPath(p), title: `${p.name} ${p.propertyNo}` })),
   ...Object.values(usageSlug).map(s => ({ path: `/usage/${s}/`, title: '用途盤源' }))
 ];
