@@ -7,6 +7,17 @@ const rawData = JSON.parse(fs.readFileSync(path.join(root, 'data/properties.json
 const dist = path.join(root, 'dist');
 const agentPage = 'https://oir.centanet.com/agent-detail/queenie-yeung/49008/';
 const whatsappBase = 'https://wa.me/85266552539';
+const propertyNoCounts = new Map();
+for (const item of rawData) {
+  const key = String(item.propertyNo || '').toLowerCase();
+  propertyNoCounts.set(key, (propertyNoCounts.get(key) || 0) + 1);
+}
+function shortListingSlug(p) {
+  const no = String(p.propertyNo || '').toLowerCase();
+  if ((propertyNoCounts.get(no) || 0) <= 1) return no;
+  const tail = String(p.slug || '').split('-').pop().toLowerCase();
+  return `${no}-${tail || String(p.id || '').slice(0, 6).toLowerCase()}`;
+}
 const publicOrigin = (process.env.PUBLIC_ORIGIN || '').replace(/\/$/, '');
 const dataDate = '2026-11-08';
 const buildingFactsPath = path.join(root, 'data/building-facts.json');
@@ -890,11 +901,10 @@ for (const p of rawData) {
   const html = detail(p);
   write(path.join(dist, `listing/${p.slug}/index.html`), html);
   // 短網址：方便社交平台貼連結，指向原始盤源頁
-  const shortPath = `/p/${String(p.propertyNo).toLowerCase()}/`;
   const alias = html
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl(`/listing/${p.slug}`)}"><meta name="robots" content="noindex,follow">`)
     .replace(/<title>[^<]*<\/title>/, `<title>${esc(`${p.name} ${p.size || ''} ${categoryLabel(p)}｜${p.propertyNo}`)}</title>`);
-  write(path.join(dist, `p/${String(p.propertyNo).toLowerCase()}/index.html`), alias);
+  write(path.join(dist, `p/${shortListingSlug(p)}/index.html`), alias);
 }
 for (const [d, dSlug] of Object.entries(districtSlug)) write(path.join(dist,`district/${dSlug}/index.html`), aggregatePage('district', d, rawData.filter(p=>p.district===d)));
 for (const [u, uSlug] of Object.entries(usageSlug)) write(path.join(dist,`usage/${uSlug}/index.html`), aggregatePage('usage', u, rawData.filter(p=>p.usage===u)));
