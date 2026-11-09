@@ -18,6 +18,7 @@ function shortListingSlug(p) {
   const tail = String(p.slug || '').split('-').pop().toLowerCase();
   return `${no}-${tail || String(p.id || '').slice(0, 6).toLowerCase()}`;
 }
+const listingPath = (p) => `/listing/${shortListingSlug(p)}/`;
 const publicOrigin = (process.env.PUBLIC_ORIGIN || '').replace(/\/$/, '');
 const dataDate = '2026-11-08';
 const buildingFactsPath = path.join(root, 'data/building-facts.json');
@@ -247,7 +248,7 @@ function unitRate(p) {
 }
 function unitTable(b) {
   const rows = b.properties.map(p => `<tr>
-      <td><a href="/listing/${p.slug}/">${esc(p.floor || '未列明')}</a></td>
+      <td><a href="${listingPath(p)}">${esc(p.floor || '未列明')}</a></td>
       <td>${esc(p.size || '未列明')}</td>
       <td>${esc(categoryLabel(p))}</td>
       <td>${esc(price(p))}</td>
@@ -259,7 +260,7 @@ function unitTable(b) {
 
 /* ---------- shared components ---------- */
 function card(p, opts = {}) {
-  const href = `/listing/${p.slug}/`;
+  const href = listingPath(p);
   const b = p._building;
   const tags = p.tags.length ? p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') : '<span class="tag muted">公開資料待核</span>';
   return `<article class="listing-card" data-search="${esc([p.name,p.nameEn,p.district,p.usage,p.categoryLabel,p.address,p.propertyNo,p.tags.join(' ')].join(' '))}" data-district="${esc(p.district)}" data-usage="${esc(p.usage)}" data-category="${esc(p.category)}">
@@ -457,7 +458,7 @@ function buildingPage(b) {
         url: canonical,
         ...(b.address ? { address: { '@type': 'PostalAddress', streetAddress: b.address, addressLocality: b.district, addressRegion: b.zone || '香港' } } : {}),
         ...(bf ? { additionalProperty: factRowsFor(bf).map(([name, value]) => ({ '@type': 'PropertyValue', name, value })) } : {}),
-        ...(b.properties.length ? { containsPlace: b.properties.map(p => ({ '@type': 'Apartment', name: `${b.name} ${p.size || ''} ${categoryLabel(p)}`.trim(), url: pageUrl(`/listing/${p.slug}`) })) } : {})
+        ...(b.properties.length ? { containsPlace: b.properties.map(p => ({ '@type': 'Apartment', name: `${b.name} ${p.size || ''} ${categoryLabel(p)}`.trim(), url: pageUrl(listingPath(p)) })) } : {})
       },
       ...(faqs.length >= 3 ? [{
         '@type': 'FAQPage',
@@ -664,7 +665,7 @@ function listingJson(p, canonical) {
 }
 function detail(p) {
   const b = p._building;
-  const canonical = pageUrl(`/listing/${p.slug}`);
+  const canonical = pageUrl(listingPath(p));
   const tags = p.tags.length ? p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('') : '<span class="tag muted">公開資料待核</span>';
   const fields = [['地區',p.district],['用途',p.usage],['樓層',p.floor||'公開資料未列明'],['面積',p.size||'公開資料未列明'],['物業編號',p.propertyNo],['廣告日期',p.publishDate?String(p.publishDate).slice(0,10):'公開資料未列明']];
   const crumb = [
@@ -899,10 +900,12 @@ write(path.join(dist,'market/index.html'), marketPage());
 for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`), buildingPage(b));
 for (const p of rawData) {
   const html = detail(p);
-  write(path.join(dist, `listing/${p.slug}/index.html`), html);
+  write(path.join(dist, `listing/${shortListingSlug(p)}/index.html`), html);
+  // 舊中文網址保留，指回新網址，避免舊連結失效
+  write(path.join(dist, `listing/${p.slug}/index.html`), html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl(listingPath(p))}"><meta name="robots" content="noindex,follow">`));
   // 短網址：方便社交平台貼連結，指向原始盤源頁
   const alias = html
-    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl(`/listing/${p.slug}`)}"><meta name="robots" content="noindex,follow">`)
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl(listingPath(p))}"><meta name="robots" content="noindex,follow">`)
     .replace(/<title>[^<]*<\/title>/, `<title>${esc(`${p.name} ${p.size || ''} ${categoryLabel(p)}｜${p.propertyNo}`)}</title>`);
   write(path.join(dist, `p/${shortListingSlug(p)}/index.html`), alias);
 }
@@ -917,7 +920,7 @@ const allPages = [
   ...Object.values(districtSlug).map(s => ({ path: `/district/${s}/`, title: '地區大廈及盤源' })),
   { path: '/listings/', title: '全部公開盤源' },
   { path: '/market/', title: '呎租及呎價參考' },
-  ...rawData.map(p => ({ path: `/listing/${p.slug}/`, title: `${p.name} ${p.propertyNo}` })),
+  ...rawData.map(p => ({ path: listingPath(p), title: `${p.name} ${p.propertyNo}` })),
   ...Object.values(usageSlug).map(s => ({ path: `/usage/${s}/`, title: '用途盤源' }))
 ];
 write(path.join(dist,'manus-routes.json'), JSON.stringify({ routes: allPages }));
