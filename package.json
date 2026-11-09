@@ -1,0 +1,11 @@
+{
+  "name": "queeniehub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import-data": "node scripts/import-data.mjs",
+    "build": "node scripts/build.mjs",
+    "start": "node server.mjs"
+  }
+}

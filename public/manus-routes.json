@@ -1,0 +1,1 @@
+{"routes":[{"path":"/","title":"Queenie 商業地產搜尋"},{"path":"/listings/","title":"全部公開樓盤"},{"path":"/district/:slug/","title":"地區樓盤"},{"path":"/usage/:slug/","title":"用途樓盤"},{"path":"/listing/:slug/","title":"樓盤詳情"}]}

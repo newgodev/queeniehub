@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://queeniehub-cyt5ut8q.manus.space/sitemap.xml
