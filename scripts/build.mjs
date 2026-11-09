@@ -801,6 +801,34 @@ const allPages = [
   ...Object.values(usageSlug).map(s => ({ path: `/usage/${s}/`, title: '用途盤源' }))
 ];
 write(path.join(dist,'manus-routes.json'), JSON.stringify({ routes: allPages }));
-write(path.join(dist,'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /api/\n${publicOrigin ? `Sitemap: ${publicOrigin}/sitemap.xml\n` : ''}`);
+const aiBots = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-SearchBot', 'PerplexityBot', 'Google-Extended', 'Applebot-Extended', 'CCBot', 'Bytespider'];
+write(path.join(dist,'robots.txt'), [
+  'User-agent: *',
+  'Allow: /',
+  'Disallow: /api/',
+  '',
+  ...aiBots.flatMap(bot => [`User-agent: ${bot}`, 'Allow: /', '']),
+  publicOrigin ? `Sitemap: ${publicOrigin}/sitemap.xml` : '',
+  ''
+].join('\n'));
+
+write(path.join(dist,'llms.txt'), [
+  '# QueenieHub — 香港工商大廈及盤源索引',
+  '',
+  '> 由香港工商物業代理 Queenie 楊佩儀維護嘅公開資料整理入口，以「大廈」為第一層實體，盤源為第二層。資料整理自公開代理頁面，價格及盤況需向代理重新核對。',
+  '',
+  `## 主要頁面`,
+  `- [香港工商大廈索引](${pageUrl('/buildings')}): ${buildings.length} 幢大廈，含地址、落成年份、層數、升降機及面積範圍`,
+  `- [全部公開盤源](${pageUrl('/listings')}): ${rawData.length} 個出售、放租及新盤項目`,
+  `- [呎租及呎價參考](${pageUrl('/market')}): 按地區及用途嘅中位數，附樣本數`,
+  `- [原始代理公開頁](${agentPage}): 資料原始來源`,
+  '',
+  '## 資料說明',
+  `- 最後抓取日期：${dataDate}`,
+  `- 大廈數目：${buildings.length}；盤源數目：${rawData.length}`,
+  '- 本網站並非任何大廈業主、管理處或發展商官方網站，亦不代表任何代理發出要約。',
+  '- 面積為公開標示嘅建築面積；呎租＝月租÷面積，呎價＝售價÷面積。',
+  ''
+].join('\n'));
 write(path.join(dist,'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${allPages.map(p=>`<url><loc>${pageUrl(p.path)}</loc><lastmod>${dataDate}</lastmod></url>`).join('')}</urlset>`);
 console.log(`Built ${allPages.length} pages (${buildings.length} buildings, ${rawData.length} listings) into ${dist}`);
