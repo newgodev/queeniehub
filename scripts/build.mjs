@@ -255,7 +255,7 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
 <a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>
-<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><span>資料更新：${dataDate} 抓取</span></div></footer>
+<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><span>資料更新：${dataDate} 抓取</span></div></footer>
 <script src="/app.js" defer></script></body></html>`;
 }
 function filterPanel() {
@@ -311,6 +311,11 @@ function buildingPage(b) {
   ];
 
   const checklist = ['建築面積與實用面積分別', '管理費、差餉及地租', '樓底高度、負重及電力容量', '升降機數目、貨梯及卸貨位', '車位供應及月租', '地契／城規用途限制', '交吉日期及現有租約', '大廈維修狀況及消防要求'];
+  const districtMarket = market.districts.get(b.district);
+  const dmSum = districtMarket ? marketSummary(districtMarket) : null;
+  const marketCard = dmSum && dmSum.rentN >= 3
+    ? `<div class="aside-card"><span class="eyebrow">同區呎租參考</span><h2>${esc(b.district)}放租中位數 ${hkd(dmSum.rentMedian)}／呎</h2><p>按本站 ${dmSum.rentN} 個${esc(b.district)}放租樣本計算，面積中位數約 ${Math.round(dmSum.rentSize).toLocaleString('en-HK')} 呎。只作比較起點，非估價。</p><a class="inline-link" href="/market/">睇全港呎租及呎價參考 ↗</a></div>`
+    : '';
 
   const graph = {
     '@context': 'https://schema.org',
@@ -368,6 +373,7 @@ function buildingPage(b) {
   <aside class="entity-aside">
     <div class="aside-card"><span class="eyebrow">快速查詢</span><h2>想要${esc(b.name)}嘅最新盤？</h2><p>講你想搵嘅面積、預算同用途，我哋可以直接幫你核對最新盤況。</p><a class="primary-button" href="${whatsappBuilding(b)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div>
     <div class="aside-card"><span class="eyebrow">同區索引</span><h2>${esc(b.district)}其他大廈</h2><div class="aside-links">${sameDistrict.slice(0,5).map(x=>`<a href="${buildingPath(x)}">${esc(x.name)} <span>${x.properties.length}</span></a>`).join('')}</div><a class="inline-link" href="/district/${districtSlug[b.district] || slug(b.district)}/">睇全部 ${esc(b.district)} 大廈 ↗</a></div>
+    ${marketCard}
   </aside>
 </section>
 ${listingBlocks.length ? `<section class="building-listings">${listingBlocks.join('')}</section>` : ''}
@@ -420,6 +426,134 @@ function detail(p) {
 <section class="detail-hero"><div class="detail-kicker">${esc(p.district)} / ${esc(categoryLabel(p))} / ${esc(p.usage)}</div><h1>${esc(p.name)}</h1><p class="lede">${esc(p.address)} · ${esc(p.size || '面積請查詢')} · ${esc(price(p))}</p>${b ? `<p class="hero-building">所屬大廈：<a href="${buildingPath(b)}">${esc(b.name)}${b.nameEn ? ` ${esc(b.nameEn)}` : ''} 大廈資料 ↗</a></p>` : ''}<div class="hero-actions"><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 查詢 ↗</a><a class="secondary-button" href="${agentPage}" target="_blank" rel="noopener">查看原始代理頁</a></div></section>
 <section class="detail-grid"><div class="detail-main"><div class="section-label">公開盤源資料</div><div class="facts">${fields.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div><div class="detail-block"><h2>盤源特色</h2><div class="tags large">${tags}</div><p>以上內容由公開盤源資料整理，實際樓面面積、價格、盤況及可用日期請於聯絡代理前重新核對。</p></div><div class="detail-block"><h2>查詢時可以直接講</h2><p class="message-box">你好，我想查詢${esc(p.name)}（${esc(p.propertyNo)}），想了解最新${esc(categoryLabel(p))}狀況、實際面積、可用日期及睇樓安排。</p></div>${b ? `<div class="detail-block"><h2>關於${esc(b.name)}</h2><p>${esc(b.name)}${b.nameEn ? `（${esc(b.nameEn)}）` : ''}位於${esc(b.district)}${b.address ? ` ${esc(b.address)}` : ''}。呢幢大廈現時有 ${b.properties.length} 個公開盤源，包括 ${b.sales.length} 個出售及 ${b.rents.length} 個放租。</p><p><a class="inline-link" href="${buildingPath(b)}">睇${esc(b.name)}完整大廈資料、面積及價格範圍 ↗</a></p></div>` : ''}</div><aside class="detail-aside"><div class="aside-card"><span class="eyebrow">資料來源</span><h2>公開代理頁</h2><p>呢個頁面係搜尋及整理入口，唔代表代理已確認現時仍然有盤。</p><a href="${agentPage}" target="_blank" rel="nofollow noopener">前往原始頁面 ↗</a></div><div class="aside-card accent"><span class="eyebrow">想搵相近盤？</span><h2>講你想要嘅地區、面積同預算</h2><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div></aside></section><section class="related"><div class="section-heading"><div><span class="section-label">繼續瀏覽</span><h2>${esc(p.district)} 其他公開盤源</h2></div><a href="/district/${districtSlug[p.district] || slug(p.district)}/">查看地區頁 ↗</a></div><div class="listing-grid">${rawData.filter(x=>x.district===p.district && x.id!==p.id).slice(0,3).map(card).join('')}</div></section>`;
   return layout({title:listingTitle(p),description:listingDesc(p),canonical,body,jsonLd:listingJson(p,canonical),ogType:'article'});
+}
+
+/* ---------- market reference (own sample statistics) ---------- */
+function median(values) {
+  if (!values.length) return null;
+  const s = [...values].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function hkd(n) {
+  if (n === null || !Number.isFinite(n)) return '—';
+  return `$${Math.round(n).toLocaleString('en-HK')}`;
+}
+const market = { districts: new Map(), groups: new Map() };
+for (const p of rawData) {
+  const size = p.sizeValue;
+  if (!Number.isFinite(size) || size <= 0) continue;
+  let unit = null;
+  let kind = null;
+  if (p.category === 'rent') {
+    const rent = num(p.rent);
+    if (rent) { unit = rent / size; kind = 'rent'; }
+  } else if (p.category === 'sale') {
+    const priceWan = num(p.price);
+    if (priceWan) { unit = (priceWan * 10000) / size; kind = 'sale'; }
+  }
+  if (!kind) continue;
+  if (!market.districts.has(p.district)) market.districts.set(p.district, { rent: [], sale: [], total: 0 });
+  const dEntry = market.districts.get(p.district);
+  dEntry.total += 1;
+  dEntry[kind].push({ unit, size });
+  const gk = `${p.district}||${p.usage}||${kind}`;
+  if (!market.groups.has(gk)) market.groups.set(gk, { district: p.district, usage: p.usage, kind, units: [], sizes: [], count: 0 });
+  const g = market.groups.get(gk);
+  g.count += 1;
+  g.units.push(unit);
+  g.sizes.push(size);
+}
+function marketSummary(entry) {
+  return {
+    rentN: entry.rent.length,
+    rentMedian: median(entry.rent.map(x => x.unit)),
+    rentSize: median(entry.rent.map(x => x.size)),
+    saleN: entry.sale.length,
+    saleMedian: median(entry.sale.map(x => x.unit)),
+    saleSize: median(entry.sale.map(x => x.size))
+  };
+}
+function districtMarketRows() {
+  return [...market.districts.entries()]
+    .map(([district, entry]) => ({ district, ...marketSummary(entry) }))
+    .filter(row => row.rentN >= 3 || row.saleN >= 3)
+    .sort((a, c) => (c.rentN + c.saleN) - (a.rentN + a.saleN));
+}
+function marketPage() {
+  const rows = districtMarketRows();
+  const groupRows = [...market.groups.values()]
+    .filter(g => g.count >= 3)
+    .map(g => ({
+      district: g.district,
+      usage: g.usage,
+      kind: g.kind,
+      count: g.count,
+      unitMedian: median(g.units),
+      sizeMedian: median(g.sizes)
+    }))
+    .sort((a, c) => (a.kind === c.kind ? c.count - a.count : a.kind === 'rent' ? -1 : 1));
+
+  const mainTable = `<div class="table-wrap"><table class="unit-table"><thead><tr><th>地區</th><th>放租樣本</th><th>呎租中位數</th><th>放租面積中位數</th><th>出售樣本</th><th>呎價中位數</th></tr></thead><tbody>${rows.map(r => `<tr>
+      <td><a href="/district/${districtSlug[r.district] || slug(r.district)}/">${esc(r.district)}</a></td>
+      <td>${r.rentN || '—'}</td>
+      <td>${r.rentN >= 3 ? `${hkd(r.rentMedian)}／呎` : '樣本不足'}</td>
+      <td>${r.rentN >= 3 && r.rentSize ? `約 ${Math.round(r.rentSize).toLocaleString('en-HK')} 呎` : '—'}</td>
+      <td>${r.saleN || '—'}</td>
+      <td>${r.saleN >= 3 ? `${hkd(r.saleMedian)}／呎` : '樣本不足'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+
+  const groupTable = `<div class="table-wrap"><table class="unit-table"><thead><tr><th>地區</th><th>公開用途</th><th>類型</th><th>樣本數</th><th>呎租／呎價中位數</th><th>面積中位數</th></tr></thead><tbody>${groupRows.map(g => `<tr>
+      <td>${esc(g.district)}</td>
+      <td>${esc(g.usage)}</td>
+      <td>${g.kind === 'rent' ? '放租' : '出售'}</td>
+      <td>${g.count}</td>
+      <td>${g.kind === 'rent' ? `${hkd(g.unitMedian)}／呎` : `${hkd(g.unitMedian)}／呎`}</td>
+      <td>${g.sizeMedian ? `約 ${Math.round(g.sizeMedian).toLocaleString('en-HK')} 呎` : '—'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+
+  const crumb = [{ label: '首頁', href: '/' }, { label: '呎租及呎價參考' }];
+  const graph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': `${pageUrl('/market')}#webpage`,
+        url: pageUrl('/market'),
+        name: '香港工商物業呎租及呎價參考｜觀塘、長沙灣、屯門｜QueenieHub',
+        description: '根據本站 2026-11-08 整理嘅 126 個公開盤源，計算各地區及用途嘅呎租與呎價中位數，附樣本數及限制說明。',
+        isPartOf: siteRef()
+      },
+      breadcrumbJson(crumb)
+    ]
+  };
+
+  const body = `${breadcrumbHtml(crumb)}
+<section class="page-intro"><span class="section-label">MARKET SNAPSHOT / ${dataDate}</span><h1>呎租同呎價，<br><em>大概喺咩水平？</em></h1><p>用本站整理嘅 ${rawData.length} 個公開盤源，自己計出各地區同用途嘅中位數。目的唔係報價，而係令你睇盤之前有個合理範圍，知道邊個叫價偏離市場。</p><a class="primary-button" href="/buildings/">由大廈開始睇</a></section>
+<section class="entity-body market-body"><div class="entity-main">
+  <div class="section-label">BY DISTRICT</div>
+  <h2>各地區呎租及呎價中位數</h2>
+  <p class="entity-lede">只列出樣本足夠嘅地區。樣本少過 3 個嘅地區唔顯示中位數，避免用一兩個盤代表整個區。</p>
+  ${mainTable}
+  <p class="table-note">呎租＝公開月租 ÷ 公開面積；呎價＝公開售價 ÷ 公開面積。面積以公開資料標示嘅建築面積為主，未換算實用面積。</p>
+  <h2 class="entity-subhead">按用途拆開睇</h2>
+  <p class="entity-lede">同一個區，工廈同寫字樓嘅呎租可以差好遠。以下只列樣本 3 個以上嘅組合。</p>
+  ${groupTable}
+  <div class="entity-block"><h2>點樣用呢啲數字</h2>
+    <p>第一，睇盤時先計一次呎租或呎價，再同表中位數比較。明顯高過中位數，就要問清楚係咪有裝修、海景、大電、或者包含其他條件。</p>
+    <p>第二，建築面積同實用面積可以相差一至三成。呢度用公開標示面積計算，如果代理提供實用面積，記得重新計一次。</p>
+    <p>第三，中位數只反映「叫價」，唔等於成交價。真正成交要睇樓層、坐向、交吉期同業主意向，所以呢頁只可以當起點，唔可以當估價。</p>
+  </div>
+  <div class="entity-block"><h2>資料限制</h2>
+    <p>本頁統計來自 ${dataDate} 抓取嘅公開代理資料，屬單一代理盤源樣本，並非全港成交數據，亦唔係估價報告。同一幢大廈可能有多個盤源被重複計算，樣本數少嘅組合波動會較大。任何議價或落訂決定，請以代理及業主最新確認為準。</p>
+  </div>
+</div>
+<aside class="entity-aside">
+  <div class="aside-card accent"><span class="eyebrow">想核對實際叫價？</span><h2>講出地區、面積同預算</h2><p>我可以幫你對返現有公開盤源，睇下邊個接近市場水平。</p><a class="primary-button" href="${whatsappBase}" target="_blank" rel="noopener">WhatsApp 查詢</a></div>
+  <div class="aside-card"><span class="eyebrow">快速入口</span><h2>熱門地區</h2><div class="aside-links">${rows.slice(0, 6).map(r => `<a href="/district/${districtSlug[r.district] || slug(r.district)}/">${esc(r.district)} <span>${r.rentN + r.saleN} 個樣本</span></a>`).join('')}</div></div>
+</aside></section>`;
+
+  return layout({ title: '香港工商物業呎租及呎價參考｜觀塘、長沙灣、屯門｜QueenieHub', description: `根據 ${rawData.length} 個公開盤源計算香港工商物業呎租及呎價中位數，按地區及用途列出樣本數、面積中位數及資料限制。`, canonical: pageUrl('/market'), body, jsonLd: JSON.stringify(graph), keywords: '工商物業呎租, 工廈呎租, 寫字樓呎租, 觀塘呎租, 長沙灣呎租, 呎價參考' });
 }
 
 /* ---------- index pages ---------- */
@@ -489,6 +623,7 @@ for (const file of fs.readdirSync(publicDir)) {
 write(path.join(dist,'index.html'), home());
 write(path.join(dist,'buildings/index.html'), buildingsIndex());
 write(path.join(dist,'listings/index.html'), listingsPage());
+write(path.join(dist,'market/index.html'), marketPage());
 for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`), buildingPage(b));
 for (const p of rawData) write(path.join(dist,`listing/${p.slug}/index.html`), detail(p));
 for (const [d, dSlug] of Object.entries(districtSlug)) write(path.join(dist,`district/${dSlug}/index.html`), aggregatePage('district', d, rawData.filter(p=>p.district===d)));
@@ -501,6 +636,7 @@ const allPages = [
   ...buildings.map(b => ({ path: buildingPath(b), title: b.name })),
   ...Object.values(districtSlug).map(s => ({ path: `/district/${s}/`, title: '地區大廈及盤源' })),
   { path: '/listings/', title: '全部公開盤源' },
+  { path: '/market/', title: '呎租及呎價參考' },
   ...rawData.map(p => ({ path: `/listing/${p.slug}/`, title: `${p.name} ${p.propertyNo}` })),
   ...Object.values(usageSlug).map(s => ({ path: `/usage/${s}/`, title: '用途盤源' }))
 ];

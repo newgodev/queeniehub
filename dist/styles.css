@@ -95,3 +95,12 @@
 .buildings-filter{grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch}
 .buildings-filter .search-field{background:var(--card)}
 @media(min-width:900px){.buildings-filter{grid-template-columns:minmax(240px,340px) minmax(0,1fr);align-items:center}}
+
+/* market page: full-width tables, aside becomes a two-column strip below */
+.market-body{display:block;max-width:1120px;padding-bottom:36px}
+.market-body .entity-main{max-width:none}
+.market-body .entity-aside{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:30px}
+.market-body .unit-table{min-width:640px}
+
+/* light-background headings: acid is unreadable on paper, use teal */
+.page-intro h1 em,.entity-main h2 em{color:var(--teal);font-style:normal}
