@@ -65,3 +65,33 @@
 /* longer homepage headline needs slightly tighter type */
 .hero h1{font-size:clamp(38px,5.4vw,68px);line-height:.98;max-width:12ch}
 @media(max-width:900px){.hero h1{font-size:44px;max-width:100%}}
+
+/* ---------- accessibility ---------- */
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--acid);padding:10px 16px;z-index:99;font-size:13px;border-radius:0 0 8px 0}
+.skip-link:focus{left:0}
+
+/* ---------- building index search ---------- */
+.jump-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.jump-chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:11px;letter-spacing:.03em;color:var(--ink);white-space:nowrap}
+.jump-chip:hover{background:var(--ink);color:var(--acid);border-color:var(--ink)}
+.building-group{scroll-margin-top:96px}
+
+/* ---------- unit comparison table ---------- */
+.table-wrap{overflow-x:auto;margin-top:18px;border:1px solid var(--line);background:var(--card)}
+.unit-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.unit-table th{text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:#f0f3ec}
+.unit-table td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.unit-table tr:last-child td{border-bottom:0}
+.unit-table tr:hover td{background:#f7f9f3}
+.unit-table td a{font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.unit-table td a:hover{color:var(--teal);text-decoration-color:var(--teal)}
+.table-note{font-size:11px;color:var(--muted);margin-top:10px}
+
+/* secondary button on light background */
+.secondary-button.dark{border-color:var(--ink);color:var(--ink)}
+.secondary-button.dark:hover{background:var(--ink);color:var(--acid)}
+
+/* building index filter: single column so search + chips are not squeezed */
+.buildings-filter{grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch}
+.buildings-filter .search-field{background:var(--card)}
+@media(min-width:900px){.buildings-filter{grid-template-columns:minmax(240px,340px) minmax(0,1fr);align-items:center}}

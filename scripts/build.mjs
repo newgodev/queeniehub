@@ -168,6 +168,25 @@ function priceSummary(b) {
   if (rentVals.length) parts.push(`租金由 ${money(Math.min(...rentVals))}／月起`);
   return parts.length ? parts.join('，') : '公開資料未列明';
 }
+function unitRate(p) {
+  if (p.category === 'rent') {
+    const r = num(p.rent), s = p.sizeValue;
+    if (r && s) return `$${Math.round(r / s)}／呎`;
+    return '—';
+  }
+  return p.unitPrice || '—';
+}
+function unitTable(b) {
+  const rows = b.properties.map(p => `<tr>
+      <td><a href="/listing/${p.slug}/">${esc(p.floor || '未列明')}</a></td>
+      <td>${esc(p.size || '未列明')}</td>
+      <td>${esc(categoryLabel(p))}</td>
+      <td>${esc(price(p))}</td>
+      <td>${esc(unitRate(p))}</td>
+      <td>${esc(p.publishDate ? String(p.publishDate).slice(0, 10) : '—')}</td>
+    </tr>`).join('');
+  return `<div class="entity-block"><h2>${esc(b.name)}現有盤源一覽</h2><p>同一幢大廈嘅公開盤源放埋一齊比較，睇清楚樓層、面積、叫價同呎價差異，再決定問邊個盤。</p><div class="table-wrap"><table class="unit-table"><thead><tr><th>樓層</th><th>面積</th><th>類型</th><th>叫價</th><th>呎價／呎租</th><th>廣告日期</th></tr></thead><tbody>${rows}</tbody></table></div><p class="table-note">呎租以公開月租除以公開面積計算，只作比較參考；實際面積、叫價及盤況以代理及業主最新確認為準。</p></div>`;
+}
 
 /* ---------- shared components ---------- */
 function card(p, opts = {}) {
@@ -187,7 +206,8 @@ function card(p, opts = {}) {
 function buildingCard(b) {
   const saleN = b.sales.length, rentN = b.rents.length;
   const badge = [saleN ? `${saleN} 出售` : '', rentN ? `${rentN} 放租` : ''].filter(Boolean).join(' · ') || '資料整理中';
-  return `<a class="building-card" href="${buildingPath(b)}">
+  const search = esc([b.name, b.nameEn, b.district, b.address, b.usages.join(' ')].filter(Boolean).join(' ')).toLowerCase();
+  return `<a class="building-card" href="${buildingPath(b)}" data-search="${esc(search)}">
     <span class="eyebrow">${esc(b.district)}${b.zone ? ` · ${esc(b.zone)}` : ''}</span>
     <strong>${esc(b.name)}</strong>
     <small>${esc(b.nameEn || '英文名稱待核')}</small>
@@ -232,8 +252,9 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
 <meta property="og:type" content="${ogType}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:site_name" content="Queenie 商業地產搜尋">${publicOrigin ? `<meta property="og:image" content="${publicOrigin}/og-cover.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="zh_HK">` : ''}
 <meta name="twitter:card" content="${publicOrigin ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">${publicOrigin ? `<meta name="twitter:image" content="${publicOrigin}/og-cover.png">` : ''}
 <link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${jsonLd}</script></head><body>
+<a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
-<main>${body}</main>
+<main id="main">${body}</main>
 <footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><span>資料更新：${dataDate} 抓取</span></div></footer>
 <script src="/app.js" defer></script></body></html>`;
 }
@@ -332,6 +353,7 @@ function buildingPage(b) {
     <p class="entity-lede">${esc(overview)}</p>
     <h2 class="entity-subhead">大廈資料</h2>
     <div class="facts">${facts.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div>
+    ${unitTable(b)}
     <div class="entity-block">
       <h2>睇樓或落訂前，建議逐項核對</h2>
       <p>以下係工商物業常見但公開資料未必齊全嘅項目。呢個清單幫你問得準，唔代表本頁已核實相關數值。</p>
@@ -407,14 +429,21 @@ function buildingsIndex() {
     if (!byDistrict.has(b.district)) byDistrict.set(b.district, []);
     byDistrict.get(b.district).push(b);
   }
-  const groups = [...byDistrict.entries()]
-    .sort((a,c) => c[1].length - a[1].length)
-    .map(([d, list]) => `<div class="building-group"><div class="section-heading"><div><span class="section-label">${esc(districtSlug[d] || '').toUpperCase()}</span><h2>${esc(d)}大廈</h2></div><a href="/district/${districtSlug[d] || slug(d)}/">${esc(d)}樓盤頁 ↗</a></div><div class="building-grid">${list.map(buildingCard).join('')}</div></div>`).join('');
-  const body = `<section class="page-intro compact"><span class="section-label">BUILDING INDEX / ${buildings.length}</span><h1>香港工商大廈索引</h1><p>由大廈開始搵：先睇地址、用途、面積及價格範圍，再睇呢幢大廈現有嘅公開出售同放租盤源。</p></section><section class="building-listings">${groups}</section><section class="notice"><strong>資料說明</strong><p>本索引整理自公開代理資料，最後抓取日期為 ${dataDate}。大廈名稱、地址及盤源數目會隨公開資料更新而變化；本頁並非任何大廈業主或管理處官方網站。</p></section>`;
+  const ordered = [...byDistrict.entries()].sort((a,c) => c[1].length - a[1].length);
+  const jumps = ordered.map(([d]) => `<a class="jump-chip" href="#d-${esc(districtSlug[d] || slug(d))}" data-jump="d-${esc(districtSlug[d] || slug(d))}">${esc(d)}</a>`).join('');
+  const groups = ordered.map(([d, list]) => {
+    const anchor = `d-${districtSlug[d] || slug(d)}`;
+    return `<div class="building-group" id="${esc(anchor)}" data-building-group><div class="section-heading"><div><span class="section-label">${esc((districtSlug[d] || '').toUpperCase())}</span><h2>${esc(d)}大廈</h2></div><a href="/district/${districtSlug[d] || slug(d)}/">${esc(d)}樓盤頁 ↗</a></div><div class="building-grid">${list.map(buildingCard).join('')}</div></div>`;
+  }).join('');
+  const body = `<section class="page-intro compact"><span class="section-label">BUILDING INDEX / ${buildings.length}</span><h1>香港工商大廈索引</h1><p>由大廈開始搵：先睇地址、用途、面積及價格範圍，再睇呢幢大廈現有嘅公開出售同放租盤源。</p></section>
+<section class="filter-panel buildings-filter" aria-label="大廈搜尋"><div class="search-field"><span>⌕</span><input id="buildingSearch" type="search" placeholder="搜尋大廈名、英文名、地區或街道" autocomplete="off"></div><div class="jump-chips">${jumps}</div></section>
+<section class="results-head"><strong id="buildingCount">${buildings.length} 幢大廈</strong><span>按盤源數量排序</span></section>
+<section class="building-listings">${groups}</section><p class="empty-state" id="buildingEmpty" hidden>未搵到符合嘅大廈。試下輸入大廈名一部分，或直接揀地區。</p>
+<section class="notice"><strong>資料說明</strong><p>本索引整理自公開代理資料，最後抓取日期為 ${dataDate}。大廈名稱、地址及盤源數目會隨公開資料更新而變化；本頁並非任何大廈業主或管理處官方網站。</p></section>`;
   return layout({title:`香港工商大廈索引｜${buildings.length} 幢大廈資料及盤源｜QueenieHub`,description:`按大廈瀏覽香港工商物業：觀塘、長沙灣、屯門、葵涌、黃竹坑等 ${buildings.length} 幢大廈嘅地址、面積範圍、出售及放租公開盤源，附查詢方法。`,canonical:pageUrl('/buildings'),body,active:'buildings',keywords:'香港工商大廈, 工廈索引, 觀塘工廈, 長沙灣工廈, 屯門工廈, 寫字樓'});
 }
 function listingsPage() {
-  const body = `<section class="page-intro compact"><span class="section-label">PUBLIC LISTINGS / ${rawData.length}</span><h1>全部公開盤源</h1><p>用地區、用途、出售／放租或關鍵字，快速縮窄你要搵嘅工商舖選項。</p></section>${filterPanel()}<section class="results-head"><strong id="resultCount">${rawData.length} 個公開項目</strong><span>價格及盤況請重新核對</span></section><section class="listing-grid" id="listingGrid">${rawData.map(card).join('')}</section><p class="empty-state" id="emptyState" hidden>未搵到符合條件嘅公開項目。試下放寬地區、用途或搜尋字詞。</p>`;
+  const body = `${breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '全部盤源' }])}<section class="page-intro compact"><span class="section-label">PUBLIC LISTINGS / ${rawData.length}</span><h1>全部公開盤源</h1><p>用地區、用途、出售／放租或關鍵字，快速縮窄你要搵嘅工商舖選項。</p></section>${filterPanel()}<section class="results-head"><strong id="resultCount">${rawData.length} 個公開項目</strong><span>價格及盤況請重新核對</span></section><section class="listing-grid" id="listingGrid">${rawData.map(card).join('')}</section><p class="empty-state" id="emptyState" hidden>未搵到符合條件嘅公開項目。試下放寬地區、用途或搜尋字詞。</p>`;
   return layout({title:`全部香港工商舖公開盤源｜${rawData.length} 個項目｜QueenieHub`,description:`按地區、用途、出售／放租及關鍵字瀏覽香港工商舖 ${rawData.length} 個公開盤源，每項附所屬大廈地址、面積範圍及 WhatsApp 查詢方法。`,canonical:pageUrl('/listings'),body,active:'listings'});
 }
 function home() {
@@ -438,9 +467,14 @@ function aggregatePage(type, value, list) {
   const description = isDistrict
     ? `${value}工商物業大廈索引：${bList.length} 幢大廈嘅地址、用途、面積範圍及價格概況，並列出 ${list.length} 個公開出售及放租盤源。`
     : `${value}公開盤源共 ${list.length} 個項目，按面積、價格及出售或放租瀏覽，每項附所屬大廈地址、面積範圍及 WhatsApp 查詢方法。`;
-  const body = `<section class="page-intro"><span class="section-label">${isDistrict?'AREA INDEX':'USAGE INDEX'}</span><h1>${esc(value)}<br><em>${isDistrict?'大廈及盤源':'盤源分類'}</em></h1><p>${esc(description)}</p><a class="primary-button" href="/listings/">查看全部盤源</a></section>${isDistrict && bList.length ? `<section class="featured-section"><div class="section-heading"><div><span class="section-label">BUILDINGS</span><h2>${esc(value)}大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${bList.map(buildingCard).join('')}</div></section>` : ''}<section class="results-head"><strong>${list.length} 個公開項目</strong><span>資料需重新核對</span></section><section class="listing-grid">${list.map(card).join('')}</section><section class="notice"><strong>資料提醒</strong><p>呢度係公開資料整理入口，唔係實時庫存保證，亦非任何大廈業主或管理處官方網站。價格、面積、盤況及可用日期請直接向代理核對。</p></section>`;
+  const body = `${breadcrumbHtml([{ label: '首頁', href: '/' }, { label: isDistrict ? value : `${value}盤源` }])}<section class="page-intro"><span class="section-label">${isDistrict?'AREA INDEX':'USAGE INDEX'}</span><h1>${esc(value)}<br><em>${isDistrict?'大廈及盤源':'盤源分類'}</em></h1><p>${esc(description)}</p><a class="primary-button" href="/listings/">查看全部盤源</a></section>${isDistrict && bList.length ? `<section class="featured-section"><div class="section-heading"><div><span class="section-label">BUILDINGS</span><h2>${esc(value)}大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${bList.map(buildingCard).join('')}</div></section>` : ''}<section class="results-head"><strong>${list.length} 個公開項目</strong><span>資料需重新核對</span></section><section class="listing-grid">${list.map(card).join('')}</section><section class="notice"><strong>資料提醒</strong><p>呢度係公開資料整理入口，唔係實時庫存保證，亦非任何大廈業主或管理處官方網站。價格、面積、盤況及可用日期請直接向代理核對。</p></section>`;
   const pathName = isDistrict ? `/district/${dSlug}` : `/usage/${usageSlug[value] || slug(value)}`;
   return layout({title,description,canonical:pageUrl(pathName),body});
+}
+
+function notFoundPage() {
+  const body = `<section class="page-intro"><span class="section-label">404 / NOT FOUND</span><h1>搵唔到呢一頁。</h1><p>個別盤源可能已經下架，或者網址打錯。你可以由大廈索引或全部盤源重新開始。</p><div class="hero-actions"><a class="primary-button" href="/buildings/">睇全部大廈</a><a class="secondary-button dark" href="/listings/">睇全部盤源</a></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START HERE</span><h2>熱門地區大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${buildings.slice(0, 6).map(buildingCard).join('')}</div></section>`;
+  return layout({ title: '搵唔到呢一頁｜香港工商大廈索引及公開盤源｜QueenieHub', description: '此頁面不存在或盤源可能已下架。由香港工商大廈索引或全部公開盤源重新開始，按地區、用途、面積及價格搵合適工商物業。', canonical: pageUrl('/404.html'), body, keywords: '香港工商大廈, 工廈, 寫字樓, 盤源索引' });
 }
 
 /* ---------- build ---------- */
@@ -459,6 +493,7 @@ for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`)
 for (const p of rawData) write(path.join(dist,`listing/${p.slug}/index.html`), detail(p));
 for (const [d, dSlug] of Object.entries(districtSlug)) write(path.join(dist,`district/${dSlug}/index.html`), aggregatePage('district', d, rawData.filter(p=>p.district===d)));
 for (const [u, uSlug] of Object.entries(usageSlug)) write(path.join(dist,`usage/${uSlug}/index.html`), aggregatePage('usage', u, rawData.filter(p=>p.usage===u)));
+write(path.join(dist,'404.html'), notFoundPage());
 
 const allPages = [
   { path: '/', title: 'QueenieHub 香港工商大廈索引' },
@@ -471,5 +506,5 @@ const allPages = [
 ];
 write(path.join(dist,'manus-routes.json'), JSON.stringify({ routes: allPages }));
 write(path.join(dist,'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /api/\n${publicOrigin ? `Sitemap: ${publicOrigin}/sitemap.xml\n` : ''}`);
-write(path.join(dist,'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${allPages.map(p=>`<url><loc>${pageUrl(p.path)}</loc></url>`).join('')}</urlset>`);
+write(path.join(dist,'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${allPages.map(p=>`<url><loc>${pageUrl(p.path)}</loc><lastmod>${dataDate}</lastmod></url>`).join('')}</urlset>`);
 console.log(`Built ${allPages.length} pages (${buildings.length} buildings, ${rawData.length} listings) into ${dist}`);

@@ -37,6 +37,18 @@
 - [x] 提交 `https://queeniehub.estate/sitemap.xml`，狀態 Success，已發現 153 個頁面（提交時版本）。
 - [x] 首頁 URL Inspection live test 通過：Page can be indexed。
 
+
+### 2026-11-09 追加改進（大廈頁可用性及索引）
+- [x] 每幢大廈頁加入「現有盤源一覽」比較表：樓層、面積、類型、叫價、呎價／呎租、廣告日期，全部由公開資料計算。
+- [x] 大廈索引加入即時搜尋（大廈名、英文名、地區、街道）及 20 個地區跳轉標籤。
+- [x] 列表頁、大廈索引、地區頁及用途頁補上麵包屑導覽。
+- [x] 加入品牌 404 頁（GitHub Pages 會自動使用 `404.html`），引導回大廈索引及盤源。
+- [x] sitemap 每個 URL 加入 `lastmod`。
+- [x] 加入「跳至主要內容」skip link 及 `main` landmark，改善無障礙。
+- [x] 修正 `app.js` 會覆寫首頁 `document.title` 嘅舊 bug（會令 SEO 面板讀到舊標題）。
+- [x] 加入自製 1200×630 品牌分享圖 `og-cover.png`，補上 `og:image`、`twitter:image` 及 `og:locale`。
+- [x] 建立 `scripts/deploy-github.sh`：同步專案到 GitHub Pages repo 並觸發部署。
+
 ## 尚未做 / 下一步
 - [ ] 重新提交更新後 sitemap（221 個 URL，包含 67 幢大廈），並對日昇亞太中心等重點大廈頁 request indexing。
 - [ ] 為 10–20 幢重點大廈補充已核實嘅大廈資料（樓層、落成年份、管理費、交通），只加有可靠來源嘅欄位。
