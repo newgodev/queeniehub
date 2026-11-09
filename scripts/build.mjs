@@ -9,6 +9,51 @@ const agentPage = 'https://oir.centanet.com/agent-detail/queenie-yeung/49008/';
 const whatsappBase = 'https://wa.me/85266552539';
 const publicOrigin = (process.env.PUBLIC_ORIGIN || '').replace(/\/$/, '');
 const dataDate = '2026-11-08';
+const buildingFactsPath = path.join(root, 'data/building-facts.json');
+const buildingFacts = fs.existsSync(buildingFactsPath) ? JSON.parse(fs.readFileSync(buildingFactsPath, 'utf8')) : {};
+function factsFor(b) {
+  if (!b) return null;
+  const key = slug(b.nameEn || b.name);
+  const entry = buildingFacts[key];
+  return entry && typeof entry === 'object' && !Array.isArray(entry) ? entry : null;
+}
+function factRowsFor(bf) {
+  const rows = [];
+  if (bf.yearBuilt) rows.push(['落成年份', `${bf.yearBuilt}${bf.yearNote ? `（${bf.yearNote}）` : ''}`]);
+  if (bf.floors) rows.push(['樓層數目', bf.floors]);
+  if (bf.grade) rows.push(['級別', bf.grade]);
+  if (bf.lifts) rows.push(['升降機', bf.lifts]);
+  if (bf.ac) rows.push(['冷氣系統', bf.ac]);
+  if (bf.ownership) rows.push(['業權', bf.ownership]);
+  if (bf.developer) rows.push(['發展商', bf.developer]);
+  if (bf.management) rows.push(['管理公司', bf.management]);
+  if (bf.typicalFloor) rows.push(['標準樓層面積', bf.typicalFloor]);
+  if (bf.ceiling) rows.push(['樓底', bf.ceiling]);
+  if (bf.gfa) rows.push(['總樓面', bf.gfa]);
+  if (bf.parking) rows.push(['車位', bf.parking]);
+  if (bf.mtr) rows.push(['最近港鐵', bf.mtr]);
+  return rows;
+}
+function factSentence(b, bf) {
+  const parts = [];
+  if (bf.yearBuilt) parts.push(`${b.name}於 ${bf.yearBuilt} 年落成${bf.yearNote ? `（${bf.yearNote}）` : ''}`);
+  else parts.push(`${b.name}`);
+  if (bf.floors) parts.push(`樓高 ${bf.floors}`);
+  if (bf.grade) parts.push(`屬${bf.grade}`);
+  let head = parts.join('，');
+  const details = [];
+  if (bf.lifts) details.push(`升降機配置為 ${bf.lifts}`);
+  if (bf.ac) details.push(`冷氣系統為${bf.ac}`);
+  if (bf.ownership) details.push(`業權為${bf.ownership}`);
+  if (bf.developer) details.push(`由${bf.developer}發展`);
+  if (bf.management) details.push(`管理公司為${bf.management}`);
+  if (bf.typicalFloor) details.push(`標準樓層面積約 ${bf.typicalFloor.replace(/^約\s*/, '')}`);
+  if (bf.parking) details.push(`車位供應包括${bf.parking}`);
+  let text = `${head}，位於${b.district}${b.address ? `，地址為${b.address}` : ''}。`;
+  if (details.length) text += `大廈${details.join('，')}。`;
+  if (bf.mtr) text += `交通方面，鄰近${bf.mtr}，方便客戶及員工往返。`;
+  return text;
+}
 
 const districtMeta = {
   '觀塘': '觀塘工廈、工商樓盤及寫字樓出售／放租公開資料。按大廈、面積及價格瀏覽，查詢最新盤況及睇樓安排。',
@@ -246,12 +291,19 @@ function siteRef() {
   return { '@type': 'WebSite', name: 'Queenie 商業地產搜尋', url: pageUrl('/') };
 }
 function layout({title, description, canonical, body, active='all', jsonLd='', keywords='香港工商舖, 香港工廈, 寫字樓放租, 商業地產, 樓盤搜尋', ogType='website'}) {
+  const structured = jsonLd || JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: siteRef() },
+      { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: '首頁', item: pageUrl('/') }] }
+    ]
+  });
   return `<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="keywords" content="${esc(keywords)}"><link rel="canonical" href="${canonical}">
 <meta property="og:type" content="${ogType}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:site_name" content="Queenie 商業地產搜尋">${publicOrigin ? `<meta property="og:image" content="${publicOrigin}/og-cover.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="zh_HK">` : ''}
 <meta name="twitter:card" content="${publicOrigin ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">${publicOrigin ? `<meta name="twitter:image" content="${publicOrigin}/og-cover.png">` : ''}
-<link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${jsonLd}</script></head><body>
+<link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${structured}</script></head><body>
 <a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>
@@ -292,6 +344,12 @@ function buildingPage(b) {
     ['價格概況', priceSummary(b)],
     ['最新公開廣告日期', b.lastDate ? String(b.lastDate).slice(0,10) : dataDate]
   ];
+
+  const bf = factsFor(b);
+  const factList = bf ? [...facts, ...factRowsFor(bf)] : facts;
+  const factSourceBlock = bf && Array.isArray(bf.sources) && bf.sources.length
+    ? `<div class="entity-block"><h2>大廈客觀資料來源</h2><p>以下年份、層數、升降機及業權資料由公開物業資料庫交叉核對；數字有差異時保留較多來源一致嘅版本，並喺括號標示分歧。</p><ul class="source-list">${bf.sources.map(x => `<li><a href="${esc(x.url)}" target="_blank" rel="nofollow noopener">${esc(x.label)} ↗</a></li>`).join('')}</ul><p class="table-note">本頁唔會就未經核實嘅資料作推測；如發現資料有更新，歡迎透過 WhatsApp 通知我更正。</p></div>`
+    : '';
 
   const listingBlocks = [];
   if (b.rents.length) {
@@ -337,6 +395,7 @@ function buildingPage(b) {
         ...(b.nameEn ? { alternateName: b.nameEn } : {}),
         url: canonical,
         ...(b.address ? { address: { '@type': 'PostalAddress', streetAddress: b.address, addressLocality: b.district, addressRegion: b.zone || '香港' } } : {}),
+        ...(bf ? { additionalProperty: factRowsFor(bf).map(([name, value]) => ({ '@type': 'PropertyValue', name, value })) } : {}),
         ...(b.properties.length ? { containsPlace: b.properties.map(p => ({ '@type': 'Apartment', name: `${b.name} ${p.size || ''} ${categoryLabel(p)}`.trim(), url: pageUrl(`/listing/${p.slug}`) })) } : {})
       },
       breadcrumbJson(crumb)
@@ -357,8 +416,9 @@ function buildingPage(b) {
     <div class="section-label">BUILDING OVERVIEW</div>
     <h2>${esc(b.name)}係一幢點樣嘅物業？</h2>
     <p class="entity-lede">${esc(overview)}</p>
+    ${bf ? `<h2 class="entity-subhead">位置、落成年份及大廈規格</h2><p class="entity-lede">${esc(factSentence(b, bf))}</p>` : ''}
     <h2 class="entity-subhead">大廈資料</h2>
-    <div class="facts">${facts.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div>
+    <div class="facts">${factList.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div>
     ${unitTable(b)}
     <div class="entity-block">
       <h2>睇樓或落訂前，建議逐項核對</h2>
@@ -370,6 +430,7 @@ function buildingPage(b) {
       <p>本頁資料整理自公開代理頁面，最後抓取日期為 ${dataDate}。QueenieHub 係獨立嘅公開資料整理及查詢入口，同${esc(b.name)}業主、管理處及發展商並無官方關係，亦唔代表任何一方發出要約。所有價格、面積及盤況以代理及業主最新確認為準。</p>
       <p><a class="inline-link" href="${agentPage}" rel="nofollow noopener" target="_blank">查看原始代理公開頁 ↗</a></p>
     </div>
+    ${factSourceBlock}
   </div>
   <aside class="entity-aside">
     <div class="aside-card"><span class="eyebrow">快速查詢</span><h2>想要${esc(b.name)}嘅最新盤？</h2><p>講你想搵嘅面積、預算同用途，我哋可以直接幫你核對最新盤況。</p><a class="primary-button" href="${whatsappBuilding(b)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div>
@@ -383,6 +444,69 @@ ${sameDistrict.length ? `<section class="related"><div class="section-heading"><
   return layout({ title, description, canonical, body, active: 'buildings', jsonLd: JSON.stringify(graph), ogType: 'article', keywords: `${b.name}, ${b.nameEn || ''}, ${b.district}工廈, ${b.district}寫字樓, ${b.district}工商物業`.replace(/,\s*,/g,',') });
 }
 
+/* ---------- listing long copy ---------- */
+function unitRateText(p) {
+  const size = p.sizeValue;
+  if (!Number.isFinite(size) || size <= 0) return '';
+  if (p.category === 'rent') {
+    const rent = num(p.rent);
+    return rent ? `折合呎租約 $${Math.round(rent / size)}／呎` : '';
+  }
+  const sale = num(p.price);
+  return sale ? `折合呎價約 $${Math.round((sale * 10000) / size)}／呎` : '';
+}
+function normSize(v) { return String(v || '').replace(/^約\s*/, '').trim(); }
+function listingLongDesc(p, b, bf) {
+  const core = [];
+  const nameEn = b && b.nameEn ? `（${b.nameEn}）` : '';
+  core.push(`${p.name}${nameEn}位於${p.district}${p.address ? ` ${p.address}` : ''}，屬${p.usage}用途，物業編號 ${p.propertyNo}。`);
+
+  const unit = [];
+  if (p.floor) unit.push(`位於${p.floor}`);
+  const sizeText = normSize(p.size);
+  if (sizeText) unit.push(`公開發布面積 ${sizeText}`);
+  if (p.category === 'rent' && p.rent) unit.push(`月租 ${p.rent}`);
+  else if (p.price) unit.push(`叫價 ${p.price}`);
+  const rate = unitRateText(p);
+  if (unit.length) core.push(`${unit.join('，')}${rate ? `，${rate}` : ''}。`);
+
+  const building = [];
+  if (bf) {
+    const bits = [];
+    if (bf.yearBuilt) bits.push(`${bf.yearBuilt} 年落成`);
+    if (bf.floors) bits.push(`樓高 ${bf.floors}`);
+    if (bf.lifts) bits.push(`設 ${bf.lifts}`);
+    if (bf.mtr) bits.push(`鄰近${bf.mtr}`);
+    if (bits.length) building.push(`所屬大廈${b.name}於 ${bits.join('、')}。`.replace('於 於','於'));
+  } else if (b) {
+    const dCount = buildings.filter(x => x.district === p.district).length;
+    const dListings = rawData.filter(x => x.district === p.district).length;
+    building.push(`所屬大廈${b.name}現有 ${b.properties.length} 個公開盤源，${p.district}同區另有 ${dCount} 幢大廈、${dListings} 個公開盤源可一併比較。`);
+  }
+
+  const tags = p.tags && p.tags.length ? `單位狀況標示為${p.tags.join('、')}。` : '';
+  const dm = market.districts.get(p.district);
+  const dmSum = dm ? marketSummary(dm) : null;
+  let marketText = '';
+  if (dmSum) {
+    const isRent = p.category === 'rent';
+    if ((isRent && dmSum.rentN >= 3) || (!isRent && dmSum.saleN >= 3)) {
+      const med = isRent ? `$${Math.round(dmSum.rentMedian)}／呎` : `$${Math.round(dmSum.saleMedian).toLocaleString('en-HK')}／呎`;
+      marketText = `${p.district}同類公開盤源${isRent ? '呎租' : '呎價'}中位數約 ${med}，可作議價參考。`;
+    }
+  }
+  const closing = '面積、交吉期及盤況請於查詢時核對。';
+
+  const optional = [tags, marketText].filter(Boolean);
+  const render = (opts, tail) => core.concat(building, opts, [tail]).filter(Boolean).join('');
+  let text = render(optional.concat([closing]));
+  while (text.length > 205 && optional.length) {
+    optional.pop();
+    text = render(optional.concat([closing]));
+  }
+  return text;
+}
+
 /* ---------- listing page ---------- */
 function listingJson(p, canonical) {
   const b = p._building;
@@ -392,9 +516,44 @@ function listingJson(p, canonical) {
     ...(b ? [{ label: b.name, href: buildingPath(b) }] : []),
     { label: `${categoryLabel(p)} ${p.propertyNo}` }
   ];
+  const bf = factsFor(b);
+  const rentVal = num(p.rent);
+  const saleVal = num(p.price);
+  const offerPrice = p.category === 'rent' ? rentVal : (saleVal ? saleVal * 10000 : null);
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
+      {
+        '@type': 'RealEstateListing',
+        '@id': `${canonical}#listing`,
+        url: canonical,
+        name: `${p.name}${p.size ? ` ${p.size}` : ''}${categoryLabel(p)}（物業編號 ${p.propertyNo}）`,
+        ...(p.publishDate ? { datePosted: String(p.publishDate).slice(0, 10) } : {}),
+        identifier: { '@type': 'PropertyValue', propertyID: '物業編號', value: p.propertyNo },
+        about: {
+          '@type': 'Accommodation',
+          name: `${b ? b.name : p.name}${p.floor ? ` ${p.floor}` : ''}`,
+          ...(p.sizeValue ? { floorSize: { '@type': 'QuantitativeValue', value: p.sizeValue, unitCode: 'FTK' } } : {}),
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: p.address || (b && b.address) || '',
+            addressLocality: p.district,
+            addressRegion: '香港',
+            addressCountry: 'HK'
+          },
+          ...(b ? { containedInPlace: { '@type': 'Place', name: b.name, ...(b.nameEn ? { alternateName: b.nameEn } : {}), url: pageUrl(buildingPath(b)) } } : {})
+        },
+        ...(offerPrice ? {
+          offers: {
+            '@type': 'Offer',
+            price: offerPrice,
+            priceCurrency: 'HKD',
+            availability: 'https://schema.org/InStock',
+            url: canonical,
+            ...(p.category === 'rent' ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: offerPrice, priceCurrency: 'HKD', unitCode: 'MON' } } : {})
+          }
+        } : {})
+      },
       {
         '@type': 'WebPage',
         url: canonical,
@@ -425,7 +584,7 @@ function detail(p) {
   ];
   const body = `${breadcrumbHtml(crumb)}
 <section class="detail-hero"><div class="detail-kicker">${esc(p.district)} / ${esc(categoryLabel(p))} / ${esc(p.usage)}</div><h1>${esc(p.name)}</h1><p class="lede">${esc(p.address)} · ${esc(p.size || '面積請查詢')} · ${esc(price(p))}</p>${b ? `<p class="hero-building">所屬大廈：<a href="${buildingPath(b)}">${esc(b.name)}${b.nameEn ? ` ${esc(b.nameEn)}` : ''} 大廈資料 ↗</a></p>` : ''}<div class="hero-actions"><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 查詢 ↗</a><button class="secondary-button compare-btn" type="button" data-id="${esc(p.id)}" data-label="${esc(`${p.name}（${p.propertyNo}）`)}" aria-pressed="false">＋ 加入比較</button><a class="secondary-button" href="${agentPage}" target="_blank" rel="noopener">查看原始代理頁</a></div></section>
-<section class="detail-grid"><div class="detail-main"><div class="section-label">公開盤源資料</div><div class="facts">${fields.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div><div class="detail-block"><h2>盤源特色</h2><div class="tags large">${tags}</div><p>以上內容由公開盤源資料整理，實際樓面面積、價格、盤況及可用日期請於聯絡代理前重新核對。</p></div><div class="detail-block"><h2>查詢時可以直接講</h2><p class="message-box">你好，我想查詢${esc(p.name)}（${esc(p.propertyNo)}），想了解最新${esc(categoryLabel(p))}狀況、實際面積、可用日期及睇樓安排。</p></div>${b ? `<div class="detail-block"><h2>關於${esc(b.name)}</h2><p>${esc(b.name)}${b.nameEn ? `（${esc(b.nameEn)}）` : ''}位於${esc(b.district)}${b.address ? ` ${esc(b.address)}` : ''}。呢幢大廈現時有 ${b.properties.length} 個公開盤源，包括 ${b.sales.length} 個出售及 ${b.rents.length} 個放租。</p><p><a class="inline-link" href="${buildingPath(b)}">睇${esc(b.name)}完整大廈資料、面積及價格範圍 ↗</a></p></div>` : ''}</div><aside class="detail-aside"><div class="aside-card"><span class="eyebrow">資料來源</span><h2>公開代理頁</h2><p>呢個頁面係搜尋及整理入口，唔代表代理已確認現時仍然有盤。</p><a href="${agentPage}" target="_blank" rel="nofollow noopener">前往原始頁面 ↗</a></div><div class="aside-card accent"><span class="eyebrow">想搵相近盤？</span><h2>講你想要嘅地區、面積同預算</h2><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div></aside></section><section class="related"><div class="section-heading"><div><span class="section-label">繼續瀏覽</span><h2>${esc(p.district)} 其他公開盤源</h2></div><a href="/district/${districtSlug[p.district] || slug(p.district)}/">查看地區頁 ↗</a></div><div class="listing-grid">${rawData.filter(x=>x.district===p.district && x.id!==p.id).slice(0,3).map(card).join('')}</div></section>`;
+<section class="detail-grid"><div class="detail-main"><div class="section-label">公開盤源資料</div><div class="facts">${fields.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div><div class="detail-block"><h2>盤源特色</h2><div class="tags large">${tags}</div><p>以上內容由公開盤源資料整理，實際樓面面積、價格、盤況及可用日期請於聯絡代理前重新核對。</p></div><div class="detail-block"><h2>${esc(p.name)}嘅位置、面積及價格重點</h2><p>${esc(listingLongDesc(p, b, factsFor(b)))}</p></div><div class="detail-block"><h2>查詢時可以直接講</h2><p class="message-box">你好，我想查詢${esc(p.name)}（${esc(p.propertyNo)}），想了解最新${esc(categoryLabel(p))}狀況、實際面積、可用日期及睇樓安排。</p></div>${b ? `<div class="detail-block"><h2>關於${esc(b.name)}</h2><p>${esc(b.name)}${b.nameEn ? `（${esc(b.nameEn)}）` : ''}位於${esc(b.district)}${b.address ? ` ${esc(b.address)}` : ''}。呢幢大廈現時有 ${b.properties.length} 個公開盤源，包括 ${b.sales.length} 個出售及 ${b.rents.length} 個放租。</p><p><a class="inline-link" href="${buildingPath(b)}">睇${esc(b.name)}完整大廈資料、面積及價格範圍 ↗</a></p></div>` : ''}</div><aside class="detail-aside"><div class="aside-card"><span class="eyebrow">資料來源</span><h2>公開代理頁</h2><p>呢個頁面係搜尋及整理入口，唔代表代理已確認現時仍然有盤。</p><a href="${agentPage}" target="_blank" rel="nofollow noopener">前往原始頁面 ↗</a></div><div class="aside-card accent"><span class="eyebrow">想搵相近盤？</span><h2>講你想要嘅地區、面積同預算</h2><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div></aside></section><section class="related"><div class="section-heading"><div><span class="section-label">繼續瀏覽</span><h2>${esc(p.district)} 其他公開盤源</h2></div><a href="/district/${districtSlug[p.district] || slug(p.district)}/">查看地區頁 ↗</a></div><div class="listing-grid">${rawData.filter(x=>x.district===p.district && x.id!==p.id).slice(0,3).map(card).join('')}</div></section>`;
   return layout({title:listingTitle(p),description:listingDesc(p),canonical,body,jsonLd:listingJson(p,canonical),ogType:'article'});
 }
 

@@ -1,0 +1,108 @@
+{
+  "_note": "只收錄有兩個或以上公開來源支持嘅大廈客觀資料。數字有差異時保留較多來源一致嘅版本，並喺 yearNote／floorsNote 標示分歧。所有條目附來源網址，方便日後覆核。",
+  "assun-pacific-centre": {
+    "yearBuilt": "1996",
+    "yearNote": "部分公開資料標示 1995",
+    "floors": "20 層",
+    "lifts": "2 部客梯、1 部貨梯",
+    "ac": "獨立冷氣",
+    "ownership": "分拆業權",
+    "developer": "越秀地產",
+    "management": "柏聯物業管理",
+    "typicalFloor": "約 3,737 呎",
+    "mtr": "觀塘站，步行約 10 分鐘",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/industrial/kowloon-kwun-tong-assun-pacific-centre/detail/fc21d27c-aa67-49dd-ae06-bf8d77a9cd7e/" },
+      { "label": "美聯工商舖大廈資料", "url": "https://www.midlandici.com.hk/zh-hk/building/KWT-%E8%A7%80%E5%A1%98-%E6%97%A5%E6%98%87%E4%BA%9E%E5%A4%AA%E4%B8%AD%E5%BF%83/B000007501" },
+      { "label": "Leasing Hub", "url": "https://www.leasinghub.com/zh/building/assun-pacific-centre/7184" }
+    ]
+  },
+  "mg-tower": {
+    "yearBuilt": "2011",
+    "floors": "24 層",
+    "grade": "甲級寫字樓",
+    "management": "第一太平戴維斯物業管理",
+    "ownership": "分拆業權",
+    "mtr": "牛頭角站，步行約 4 分鐘",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/office/kowloon-kwun-tong-mg-tower/detail/6d799f5f-d533-4f2b-909f-0b0fc633e874/" },
+      { "label": "美聯工商舖大廈資料", "url": "https://www.midlandici.com.hk/zh-hk/building/KWT-%E8%A7%80%E5%A1%98-%E8%90%AC%E5%85%86%E8%B1%90%E4%B8%AD%E5%BF%83/B000022558" }
+    ]
+  },
+  "laford-centre": {
+    "yearBuilt": "1997",
+    "yearNote": "2018 年完成活化",
+    "floors": "26 層",
+    "lifts": "3 部客梯、1 部貨梯（部分資料標示 4 部客梯）",
+    "ac": "中央冷氣，平日 08:00–21:00",
+    "mtr": "荔枝角站 D2 出口，步行約 5 分鐘",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/industrial/kowloon-cheung-sha-wan-laford-centre/detail/455f8a1a-1b09-4c47-99b7-b85223fa4ac8/" },
+      { "label": "Landvision 大廈資料", "url": "https://www.landvision.com.hk/hong-kong-office/lai-chi-kok/laford-centre-b-3230/" },
+      { "label": "Leasing Hub", "url": "https://www.leasinghub.com/zh/building/laford-centre/7362" }
+    ]
+  },
+  "roytery-industrial-building": {
+    "yearBuilt": "1984",
+    "yearNote": "部分公開資料標示 1983",
+    "floors": "12 層",
+    "ownership": "分拆業權",
+    "mtr": "屯門站一帶，區內以巴士及小巴接駁為主",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/industrial/new-territories-tuen-mun-roytery-industrial-building/detail/609e58d8-bf79-4b00-b23e-9f676776fdb7/" },
+      { "label": "Leasing Hub", "url": "https://www.leasinghub.com/zh/building/roytery-industrial-building/16355" }
+    ]
+  },
+  "yau-tong-industrial-city": {
+    "yearBuilt": "1988",
+    "yearNote": "部分公開資料標示 1989",
+    "floors": "14 層（發展商資料標示全幢 16 層）",
+    "lifts": "1 部客梯、5 部貨梯（全幢 2 部客梯、10 部貨梯）",
+    "ownership": "分拆業權",
+    "developer": "信和置業",
+    "parking": "貨櫃車位 4 個、貨車位 48 個、私家車位 56 個",
+    "mtr": "油塘站，經高輝道步行前往",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/industrial/kowloon-kwun-tong-yau-tong-industrial-city-block-b/detail/a69fc3cb-d4e1-4450-8ee8-5800daf9bf70/" },
+      { "label": "信和工業官方物業資料", "url": "https://www.sino-industrial.com.hk/tc/property-details.php?property=5" }
+    ]
+  },
+  "the-mod": {
+    "yearBuilt": "2021",
+    "floors": "22 層（部分公開資料標示 25 層）",
+    "lifts": "2 部客梯、1 部貨梯",
+    "ac": "獨立分體式冷氣",
+    "developer": "德士活集團",
+    "ownership": "發展商業權",
+    "mtr": "觀塘站，步行約 10 分鐘",
+    "sources": [
+      { "label": "中原工商舖新盤資料", "url": "https://oir.centanet.com/new-property/the-mod/0c9cb63e-7607-4771-a9d7-35e4dc9d4bee/" },
+      { "label": "美聯工商舖大廈資料", "url": "https://www.midlandici.com.hk/zh-hk/building/KWT-%E8%A7%80%E5%A1%98-The-Mod/B000059632" }
+    ]
+  },
+  "global-trade-square": {
+    "yearBuilt": "2013",
+    "floors": "32 層（約 25 層辦公樓層、4 層停車場）",
+    "ownership": "分拆業權",
+    "gfa": "總樓面約 715,000 呎",
+    "mtr": "黃竹坑站，步行前往黃竹坑道一帶",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/office/hk-island-wong-chuk-hang-%E7%92%B0%E5%8C%AF%E5%BB%A3%E5%A0%B4/detail/15ad68c4-65f8-46b5-b020-cbf8e4742944/" },
+      { "label": "博思物業顧問大廈資料", "url": "https://propwiser.com.hk/tc/Building/wong-chuk-hang/global-trade-square/104" }
+    ]
+  },
+  "pan-asia-centre": {
+    "yearBuilt": "1994",
+    "yearNote": "其後完成活化",
+    "floors": "19 層（部分公開資料標示 23 層）",
+    "lifts": "2 部客梯",
+    "ac": "分體冷氣",
+    "ownership": "單一業權",
+    "ceiling": "淨層高約 3.15 米",
+    "management": "管理費約 $2.97／呎",
+    "sources": [
+      { "label": "中原工商舖物業資料庫", "url": "https://oir.centanet.com/property/industrial/kowloon-kwun-tong-pan-asia-centre/detail/8fda11fd-8aca-4f82-8ba9-f3bb663e2112/" },
+      { "label": "Value Properties 大廈概覽", "url": "https://www.valueproperties.com.hk/zh-HK/buildings/pan-asia-centre" }
+    ]
+  }
+}
