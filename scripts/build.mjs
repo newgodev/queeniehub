@@ -92,18 +92,30 @@ function pickLen(candidates, min, max, fallback) {
   const f = String(fallback).replace(/\s+/g,' ').trim();
   return f.length > max ? f.slice(0, max) : f;
 }
+function shortSize(b) {
+  const vals = b.properties.map(x => x.sizeValue).filter(v => Number.isFinite(v) && v > 0);
+  if (!vals.length) return '';
+  const min = Math.min(...vals);
+  return `${min.toLocaleString('en-HK')}呎`;
+}
 function buildingTitle(b) {
+  const total = b.properties.length;
+  const size = shortSize(b);
+  const uses = b.usages.length ? b.usages[0] : '工商';
+  const rent = b.rents.length;
+  const sale = b.sales.length;
+  const intent = rent && sale ? '租售' : rent ? '放租' : sale ? '出售' : '盤源';
   const en = b.nameEn || '';
   const enShort = en.split(/[\s(（]/)[0] || '';
-  const suffixes = ['大廈資料及公開盤源', '大廈資料及盤源', '工商物業資料', '大廈資料'];
-  const list = [];
-  for (const e of [en, enShort, '']) {
-    for (const s of suffixes) {
-      list.push(`${b.name}${e ? ` ${e}` : ''}｜${b.district}${s}｜QueenieHub`);
-      list.push(`${b.name}${e ? ` ${e}` : ''}｜${b.district}${s}`);
-    }
-  }
-  return pickLen(list, 30, 60, `${b.name}｜${b.district}工商物業資料及盤源｜QueenieHub`);
+  const candidates = [
+    `${b.name}｜${b.district}${uses}${intent}${size ? `｜${size}起` : ''}｜QueenieHub`,
+    `${b.name}｜${b.district}${uses}${intent}｜${total}個盤源｜QueenieHub`,
+    `${b.name}${enShort ? ` ${enShort}` : ''}｜${b.district}${uses}${intent}｜大廈資料`,
+    `${b.name}｜${b.district}${uses}${intent}｜面積及價格一覽`,
+    `${b.name}｜${b.district}${uses}${intent}｜大廈資料及盤源`,
+    `${b.name}${enShort ? ` ${enShort}` : ''}｜${b.district}大廈資料及公開盤源｜QueenieHub`
+  ];
+  return pickLen(candidates, 30, 46, `${b.name}｜${b.district}${uses}${intent}｜大廈資料及公開盤源｜QueenieHub`);
 }
 function buildingDesc(b) {
   const total = b.properties.length;
@@ -116,18 +128,19 @@ function buildingDesc(b) {
 }
 function listingTitle(p) {
   const b = p._building;
-  const base = `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${p.size || '面積請查詢'}｜${p.propertyNo}`;
-  return pickLen([
-    `${base}｜大廈資料`,
-    `${base}｜公開盤源`,
-    `${base}｜大廈資料及盤源`,
-    `${base}｜公開盤源及查詢`,
-    `${base}｜工商物業資料`,
-    base,
-    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${p.propertyNo}｜大廈資料及查詢`,
-    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}${b ? `｜${b.name}` : ''}｜${p.propertyNo}`,
-    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${p.propertyNo}｜QueenieHub`
-  ], 30, 60, base);
+  const rent = p.category === 'rent';
+  const money = rent ? (p.rent ? `${p.rent}／月` : '') : (p.price || '');
+  const size = p.size || '';
+  const no = p.propertyNo;
+  const candidates = [
+    `${p.name} ${size}${rent ? '放租' : categoryLabel(p)}${money ? ` ${money}` : ''}｜${no}`,
+    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}${rent ? '放租' : ''}｜${size}｜${no}`,
+    `${p.name}${size ? ` ${size}` : ''}｜${p.district}${p.usage}${categoryLabel(p)}｜${no}｜QueenieHub`,
+    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${size}｜${no}｜大廈資料`,
+    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${no}｜盤源面積價格及大廈資料`,
+    `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}${b ? `｜${b.name}` : ''}｜${no}`
+  ];
+  return pickLen(candidates, 30, 46, `${p.name}｜${p.district}${p.usage}${categoryLabel(p)}｜${no}｜盤源面積價格及大廈資料`);
 }
 function listingDesc(p) {
   const b = p._building;
@@ -376,6 +389,43 @@ function buildingPage(b) {
     ? `<div class="aside-card"><span class="eyebrow">同區呎租參考</span><h2>${esc(b.district)}放租中位數 ${hkd(dmSum.rentMedian)}／呎</h2><p>按本站 ${dmSum.rentN} 個${esc(b.district)}放租樣本計算，面積中位數約 ${Math.round(dmSum.rentSize).toLocaleString('en-HK')} 呎。只作比較起點，非估價。</p><a class="inline-link" href="/market/">睇全港呎租及呎價參考 ↗</a></div>`
     : '';
 
+  const faqs = [];
+  if (total) {
+    faqs.push({
+      q: `${b.name}現時有幾多個公開盤源？`,
+      a: `截至 ${dataDate}，本站整理到 ${total} 個公開盤源${pieces.length ? `（${pieces.join('、')}）` : ''}；公開面積${rangeText(b)}，${priceSummary(b)}。盤源數目會隨代理更新而變動，查詢時建議再確認。`
+    });
+  }
+  if (bf && bf.yearBuilt) {
+    const bits = [`${bf.yearBuilt} 年落成${bf.yearNote ? `（${bf.yearNote}）` : ''}`];
+    if (bf.floors) bits.push(`樓高 ${bf.floors}`);
+    if (bf.grade) bits.push(`屬${bf.grade}`);
+    faqs.push({ q: `${b.name}幾時落成？樓高幾層？`, a: `${b.name}${bits.join('，')}，地址為${b.district}${b.address ? ` ${b.address}` : ''}。` });
+  }
+  if (bf && (bf.lifts || bf.ac)) {
+    const bits = [];
+    if (bf.lifts) bits.push(`升降機配置為 ${bf.lifts}`);
+    if (bf.ac) bits.push(`冷氣系統為${bf.ac}`);
+    if (bf.ownership) bits.push(`業權為${bf.ownership}`);
+    faqs.push({ q: `${b.name}嘅升降機、冷氣及業權係點？`, a: `${bits.join('，')}。資料由公開物業資料庫核對，實際情況請以管理處及代理最新說明為準。` });
+  }
+  if (bf && bf.mtr) {
+    faqs.push({ q: `${b.name}交通方便嗎？`, a: `${b.name}鄰近${bf.mtr}，方便客戶及員工往返。實際步行時間會因出口及路線略有差異。` });
+  }
+  if (dmSum && dmSum.rentN >= 3 && b.rents.length) {
+    faqs.push({
+      q: `${b.name}嘅租金水平大概係點？`,
+      a: `本站整理嘅${b.district}放租樣本（${dmSum.rentN} 個）呎租中位數約 ${hkd(dmSum.rentMedian)}／呎，面積中位數約 ${Math.round(dmSum.rentSize).toLocaleString('en-HK')} 呎，可用嚟同本頁放租盤源比較叫價。`
+    });
+  }
+  faqs.push({
+    q: `想睇${b.name}嘅盤或者問價，要點做？`,
+    a: `可以透過本頁 WhatsApp 直接查詢，講清楚想要嘅面積、預算、用途同希望交吉日期，我會幫你核對最新盤況同安排睇樓。本頁並非大廈業主或管理處官方網站。`
+  });
+  const faqBlock = faqs.length >= 3
+    ? `<div class="entity-block"><h2>${esc(b.name)}常見問題</h2><div class="faq">${faqs.map(f => `<div class="faq-item"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join('')}</div></div>`
+    : '';
+
   const graph = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -398,6 +448,11 @@ function buildingPage(b) {
         ...(bf ? { additionalProperty: factRowsFor(bf).map(([name, value]) => ({ '@type': 'PropertyValue', name, value })) } : {}),
         ...(b.properties.length ? { containsPlace: b.properties.map(p => ({ '@type': 'Apartment', name: `${b.name} ${p.size || ''} ${categoryLabel(p)}`.trim(), url: pageUrl(`/listing/${p.slug}`) })) } : {})
       },
+      ...(faqs.length >= 3 ? [{
+        '@type': 'FAQPage',
+        '@id': `${canonical}#faq`,
+        mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+      }] : []),
       breadcrumbJson(crumb)
     ]
   };
@@ -425,6 +480,7 @@ function buildingPage(b) {
       <p>以下係工商物業常見但公開資料未必齊全嘅項目。呢個清單幫你問得準，唔代表本頁已核實相關數值。</p>
       <ul class="checklist">${checklist.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
     </div>
+    ${faqBlock}
     <div class="entity-block">
       <h2>資料來源及身份說明</h2>
       <p>本頁資料整理自公開代理頁面，最後抓取日期為 ${dataDate}。QueenieHub 係獨立嘅公開資料整理及查詢入口，同${esc(b.name)}業主、管理處及發展商並無官方關係，亦唔代表任何一方發出要約。所有價格、面積及盤況以代理及業主最新確認為準。</p>
@@ -734,7 +790,28 @@ function buildingsIndex() {
 <section class="results-head"><strong id="buildingCount">${buildings.length} 幢大廈</strong><span>按盤源數量排序</span></section>
 <section class="building-listings">${groups}</section><p class="empty-state" id="buildingEmpty" hidden>未搵到符合嘅大廈。試下輸入大廈名一部分，或直接揀地區。</p>
 <section class="notice"><strong>資料說明</strong><p>本索引整理自公開代理資料，最後抓取日期為 ${dataDate}。大廈名稱、地址及盤源數目會隨公開資料更新而變化；本頁並非任何大廈業主或管理處官方網站。</p></section>`;
-  return layout({title:`香港工商大廈索引｜${buildings.length} 幢大廈資料及盤源｜QueenieHub`,description:`按大廈瀏覽香港工商物業：觀塘、長沙灣、屯門、葵涌、黃竹坑等 ${buildings.length} 幢大廈嘅地址、面積範圍、出售及放租公開盤源，附查詢方法。`,canonical:pageUrl('/buildings'),body,active:'buildings',keywords:'香港工商大廈, 工廈索引, 觀塘工廈, 長沙灣工廈, 屯門工廈, 寫字樓'});
+  const idxGraph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        '@id': `${pageUrl('/buildings')}#page`,
+        url: pageUrl('/buildings'),
+        name: '香港工商大廈索引',
+        description: `香港 ${buildings.length} 幢工商大廈索引，可按地區、用途及盤源數量瀏覽。`,
+        isPartOf: siteRef()
+      },
+      {
+        '@type': 'ItemList',
+        '@id': `${pageUrl('/buildings')}#list`,
+        numberOfItems: buildings.length,
+        itemListElement: buildings.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: x.name, url: pageUrl(buildingPath(x)) }))
+      },
+      breadcrumbJson([{ label: '首頁', href: '/' }, { label: '全部大廈' }])
+    ]
+  };
+
+  return layout({title:`香港工商大廈索引｜${buildings.length} 幢大廈資料及盤源｜QueenieHub`,description:`按大廈瀏覽香港工商物業：觀塘、長沙灣、屯門、葵涌、黃竹坑等 ${buildings.length} 幢大廈嘅地址、面積範圍、出售及放租公開盤源，附查詢方法。`,canonical:pageUrl('/buildings'),body,active:'buildings',keywords:'香港工商大廈, 工廈索引, 觀塘工廈, 長沙灣工廈, 屯門工廈, 寫字樓', jsonLd: JSON.stringify(idxGraph)});
 }
 function listingsPage() {
   const body = `${breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '全部盤源' }])}<section class="page-intro compact"><span class="section-label">PUBLIC LISTINGS / ${rawData.length}</span><h1>全部公開盤源</h1><p>用地區、用途、出售／放租或關鍵字，快速縮窄你要搵嘅工商舖選項。</p></section>${filterPanel()}<section class="results-head"><strong id="resultCount">${rawData.length} 個公開項目</strong><span>價格及盤況請重新核對</span></section><section class="listing-grid" id="listingGrid">${rawData.map(card).join('')}</section><p class="empty-state" id="emptyState" hidden>未搵到符合條件嘅公開項目。試下放寬地區、用途或搜尋字詞。</p>`;
