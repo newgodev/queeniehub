@@ -576,6 +576,50 @@ function listingJson(p, canonical) {
   const rentVal = num(p.rent);
   const saleVal = num(p.price);
   const offerPrice = p.category === 'rent' ? rentVal : (saleVal ? saleVal * 10000 : null);
+  const accId = `${canonical}#accommodation`;
+  const offerId = `${canonical}#offer`;
+
+  const accommodation = {
+    '@type': 'Accommodation',
+    '@id': accId,
+    name: `${b ? b.name : p.name}${p.floor ? ` ${p.floor}` : ''}${p.size ? ` ${p.size}` : ''}`.trim(),
+    ...(p.sizeValue ? { floorSize: { '@type': 'QuantitativeValue', value: p.sizeValue, unitCode: 'FTK' } } : {}),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: p.address || (b && b.address) || '',
+      addressLocality: p.district,
+      addressRegion: '香港',
+      addressCountry: 'HK'
+    },
+    ...(b ? {
+      containedInPlace: {
+        '@type': 'Place',
+        '@id': `${pageUrl(buildingPath(b))}#place`,
+        name: b.name,
+        ...(b.nameEn ? { alternateName: b.nameEn } : {}),
+        url: pageUrl(buildingPath(b))
+      }
+    } : {})
+  };
+
+  const offer = offerPrice ? {
+    '@type': 'Offer',
+    '@id': offerId,
+    price: offerPrice,
+    priceCurrency: 'HKD',
+    availability: 'https://schema.org/InStock',
+    url: canonical,
+    itemOffered: { '@id': accId },
+    ...(p.category === 'rent' ? {
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: offerPrice,
+        priceCurrency: 'HKD',
+        referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' }
+      }
+    } : {})
+  } : null;
+
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
@@ -585,42 +629,22 @@ function listingJson(p, canonical) {
         url: canonical,
         name: `${p.name}${p.size ? ` ${p.size}` : ''}${categoryLabel(p)}（物業編號 ${p.propertyNo}）`,
         ...(p.publishDate ? { datePosted: String(p.publishDate).slice(0, 10) } : {}),
+        dateModified: dataDate,
         identifier: { '@type': 'PropertyValue', propertyID: '物業編號', value: p.propertyNo },
-        about: {
-          '@type': 'Accommodation',
-          name: `${b ? b.name : p.name}${p.floor ? ` ${p.floor}` : ''}`,
-          ...(p.sizeValue ? { floorSize: { '@type': 'QuantitativeValue', value: p.sizeValue, unitCode: 'FTK' } } : {}),
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: p.address || (b && b.address) || '',
-            addressLocality: p.district,
-            addressRegion: '香港',
-            addressCountry: 'HK'
-          },
-          ...(b ? { containedInPlace: { '@type': 'Place', name: b.name, ...(b.nameEn ? { alternateName: b.nameEn } : {}), url: pageUrl(buildingPath(b)) } } : {})
-        },
-        ...(offerPrice ? {
-          offers: {
-            '@type': 'Offer',
-            price: offerPrice,
-            priceCurrency: 'HKD',
-            availability: 'https://schema.org/InStock',
-            url: canonical,
-            ...(p.category === 'rent' ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: offerPrice, priceCurrency: 'HKD', unitCode: 'MON' } } : {})
-          }
-        } : {})
+        about: { '@id': accId },
+        ...(offer ? { mainEntity: { '@id': offerId } } : {}),
+        isPartOf: siteRef()
       },
+      ...(offer ? [offer] : []),
+      accommodation,
       {
         '@type': 'WebPage',
         url: canonical,
         name: `${b ? `${b.name}｜` : ''}${p.district}${p.usage}${categoryLabel(p)}｜${p.propertyNo}`,
         description: `${p.district}${p.usage}${categoryLabel(p)}公開資料：${p.name}，${p.size || '面積請查詢'}，${price(p)}。`,
-        about: {
-          '@type': 'Place',
-          name: p.name,
-          ...(b && b.nameEn ? { alternateName: b.nameEn } : {}),
-          ...(p.address ? { address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: p.district } } : {})
-        },
+        dateModified: dataDate,
+        lastReviewed: dataDate,
+        about: { '@id': accId },
         isPartOf: siteRef()
       },
       breadcrumbJson(crumb)
@@ -639,7 +663,7 @@ function detail(p) {
     { label: `${categoryLabel(p)} ${p.propertyNo}` }
   ];
   const body = `${breadcrumbHtml(crumb)}
-<section class="detail-hero"><div class="detail-kicker">${esc(p.district)} / ${esc(categoryLabel(p))} / ${esc(p.usage)}</div><h1>${esc(p.name)}</h1><p class="lede">${esc(p.address)} · ${esc(p.size || '面積請查詢')} · ${esc(price(p))}</p>${b ? `<p class="hero-building">所屬大廈：<a href="${buildingPath(b)}">${esc(b.name)}${b.nameEn ? ` ${esc(b.nameEn)}` : ''} 大廈資料 ↗</a></p>` : ''}<div class="hero-actions"><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 查詢 ↗</a><button class="secondary-button compare-btn" type="button" data-id="${esc(p.id)}" data-label="${esc(`${p.name}（${p.propertyNo}）`)}" aria-pressed="false">＋ 加入比較</button><a class="secondary-button" href="${agentPage}" target="_blank" rel="noopener">查看原始代理頁</a></div></section>
+<section class="detail-hero"><div class="detail-kicker">${esc(p.district)} / ${esc(categoryLabel(p))} / ${esc(p.usage)}</div><h1>${esc(`${p.name} ${normSize(p.size) || ""} ${categoryLabel(p)}`.replace(/\s+/g," ").trim())}${p.propertyNo ? `<span class="h1-no">${esc(p.propertyNo)}</span>` : ""}</h1><p class="lede">${esc(p.address)} · ${esc(p.size || '面積請查詢')} · ${esc(price(p))}</p>${b ? `<p class="hero-building">所屬大廈：<a href="${buildingPath(b)}">${esc(b.name)}${b.nameEn ? ` ${esc(b.nameEn)}` : ''} 大廈資料 ↗</a></p>` : ''}<div class="hero-actions"><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 查詢 ↗</a><button class="secondary-button compare-btn" type="button" data-id="${esc(p.id)}" data-label="${esc(`${p.name}（${p.propertyNo}）`)}" aria-pressed="false">＋ 加入比較</button><a class="secondary-button" href="${agentPage}" target="_blank" rel="noopener">查看原始代理頁</a></div></section>
 <section class="detail-grid"><div class="detail-main"><div class="section-label">公開盤源資料</div><div class="facts">${fields.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div><div class="detail-block"><h2>盤源特色</h2><div class="tags large">${tags}</div><p>以上內容由公開盤源資料整理，實際樓面面積、價格、盤況及可用日期請於聯絡代理前重新核對。</p></div><div class="detail-block"><h2>${esc(p.name)}嘅位置、面積及價格重點</h2><p>${esc(listingLongDesc(p, b, factsFor(b)))}</p></div><div class="detail-block"><h2>查詢時可以直接講</h2><p class="message-box">你好，我想查詢${esc(p.name)}（${esc(p.propertyNo)}），想了解最新${esc(categoryLabel(p))}狀況、實際面積、可用日期及睇樓安排。</p></div>${b ? `<div class="detail-block"><h2>關於${esc(b.name)}</h2><p>${esc(b.name)}${b.nameEn ? `（${esc(b.nameEn)}）` : ''}位於${esc(b.district)}${b.address ? ` ${esc(b.address)}` : ''}。呢幢大廈現時有 ${b.properties.length} 個公開盤源，包括 ${b.sales.length} 個出售及 ${b.rents.length} 個放租。</p><p><a class="inline-link" href="${buildingPath(b)}">睇${esc(b.name)}完整大廈資料、面積及價格範圍 ↗</a></p></div>` : ''}</div><aside class="detail-aside"><div class="aside-card"><span class="eyebrow">資料來源</span><h2>公開代理頁</h2><p>呢個頁面係搜尋及整理入口，唔代表代理已確認現時仍然有盤。</p><a href="${agentPage}" target="_blank" rel="nofollow noopener">前往原始頁面 ↗</a></div><div class="aside-card accent"><span class="eyebrow">想搵相近盤？</span><h2>講你想要嘅地區、面積同預算</h2><a class="primary-button" href="${whatsapp(p)}" target="_blank" rel="noopener">WhatsApp 楊佩儀</a></div></aside></section><section class="related"><div class="section-heading"><div><span class="section-label">繼續瀏覽</span><h2>${esc(p.district)} 其他公開盤源</h2></div><a href="/district/${districtSlug[p.district] || slug(p.district)}/">查看地區頁 ↗</a></div><div class="listing-grid">${rawData.filter(x=>x.district===p.district && x.id!==p.id).slice(0,3).map(card).join('')}</div></section>`;
   return layout({title:listingTitle(p),description:listingDesc(p),canonical,body,jsonLd:listingJson(p,canonical),ogType:'article'});
 }
