@@ -104,3 +104,34 @@
 
 /* light-background headings: acid is unreadable on paper, use teal */
 .page-intro h1 em,.entity-main h2 em{color:var(--teal);font-style:normal}
+
+/* ---------- shortlist / compare ---------- */
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.card-foot .card-link{margin:0}
+.compare-btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:6px 11px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.compare-btn:hover{border-color:var(--ink)}
+.compare-btn.is-on{background:var(--ink);color:var(--acid);border-color:var(--ink)}
+.secondary-button.compare-btn{background:transparent;color:#f8faf3;border-color:#a5b4aa;padding:13px 17px;font-size:13px}
+.secondary-button.compare-btn.is-on{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+
+.compare-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--ink);color:#f8faf3;border-radius:14px;padding:12px 16px;box-shadow:0 18px 40px rgba(23,35,31,.28);max-width:1100px;margin:0 auto}
+.compare-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.compare-info strong{font-size:20px;color:var(--acid);line-height:1}
+.compare-info>span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#b9c9bf}
+.compare-list{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.compare-chip{background:rgba(248,250,243,.12);border:1px solid rgba(248,250,243,.2);border-radius:999px;padding:4px 10px;font-size:11px;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.compare-note{font-size:11px;color:var(--acid)}
+.compare-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.compare-actions .ghost-button{height:38px;border-color:#5c6b62;color:#dfe9e1;background:transparent}
+.compare-actions .primary-button{padding:10px 15px;font-size:13px}
+@media(max-width:760px){
+  .compare-bar{flex-direction:column;align-items:stretch;gap:10px;left:8px;right:8px;bottom:8px;padding:12px}
+  .compare-actions{justify-content:space-between}
+  .compare-list{max-height:52px;overflow:auto}
+  .compare-chip{max-width:100%}
+}
+body{padding-bottom:0}
+@media(max-width:760px){main{padding-bottom:96px}}
+
+/* keep [hidden] authoritative over layout display rules */
+[hidden]{display:none!important}

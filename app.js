@@ -75,4 +75,79 @@
       history.replaceState(null, '', `#${link.dataset.jump}`);
     });
   });
+
+  /* shortlist: pick up to 6 listings and send one WhatsApp enquiry */
+  const bar = document.querySelector('#compareBar');
+  const barCount = document.querySelector('#compareCount');
+  const barList = document.querySelector('#compareList');
+  const send = document.querySelector('#compareSend');
+  const clearBtn = document.querySelector('#compareClear');
+  const buttons = [...document.querySelectorAll('.compare-btn')];
+  const STORE = 'queeniehub-shortlist-v1';
+  const MAX = 6;
+
+  if (bar && buttons.length) {
+    let picked = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORE) || '[]');
+      if (Array.isArray(raw)) picked = raw.filter(x => x && x.id && x.label).slice(0, MAX);
+    } catch (error) {
+      picked = [];
+    }
+
+    const persist = () => {
+      try { localStorage.setItem(STORE, JSON.stringify(picked)); } catch (error) { /* storage blocked */ }
+    };
+
+    const render = () => {
+      buttons.forEach(btn => {
+        const on = picked.some(x => x.id === btn.dataset.id);
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (btn.classList.contains('secondary-button')) {
+          btn.textContent = on ? '✓ 已加入比較' : '＋ 加入比較';
+        } else {
+          btn.textContent = on ? '✓ 已選' : '＋ 比較';
+        }
+      });
+
+      bar.hidden = picked.length === 0;
+      if (barCount) barCount.textContent = String(picked.length);
+      if (barList) {
+        barList.innerHTML = picked.map(x => `<span class="compare-chip">${x.label.replace(/[<>&]/g, '')}</span>`).join('');
+      }
+      if (send) {
+        const lines = picked.map((x, i) => `${i + 1}. ${x.label}`).join('\n');
+        const text = `你好，我想比較以下 ${picked.length} 個盤源：\n${lines}\n\n想了解最新售價／租金、實際面積、可用日期及睇樓安排。`;
+        send.href = `https://wa.me/85266552539?text=${encodeURIComponent(text)}`;
+      }
+    };
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', event => {
+        event.preventDefault();
+        const id = btn.dataset.id;
+        const label = btn.dataset.label || '';
+        if (picked.some(x => x.id === id)) {
+          picked = picked.filter(x => x.id !== id);
+        } else {
+          if (picked.length >= MAX) {
+            if (barList) barList.insertAdjacentHTML('afterbegin', '<span class="compare-note">最多同時比較 6 個盤源</span>');
+            return;
+          }
+          picked.push({ id, label });
+        }
+        persist();
+        render();
+      });
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      picked = [];
+      persist();
+      render();
+    });
+
+    render();
+  }
 })();
