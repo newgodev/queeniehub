@@ -886,7 +886,16 @@ write(path.join(dist,'buildings/index.html'), buildingsIndex());
 write(path.join(dist,'listings/index.html'), listingsPage());
 write(path.join(dist,'market/index.html'), marketPage());
 for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`), buildingPage(b));
-for (const p of rawData) write(path.join(dist,`listing/${p.slug}/index.html`), detail(p));
+for (const p of rawData) {
+  const html = detail(p);
+  write(path.join(dist, `listing/${p.slug}/index.html`), html);
+  // 短網址：方便社交平台貼連結，指向原始盤源頁
+  const shortPath = `/p/${String(p.propertyNo).toLowerCase()}/`;
+  const alias = html
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${pageUrl(`/listing/${p.slug}`)}"><meta name="robots" content="noindex,follow">`)
+    .replace(/<title>[^<]*<\/title>/, `<title>${esc(`${p.name} ${p.size || ''} ${categoryLabel(p)}｜${p.propertyNo}`)}</title>`);
+  write(path.join(dist, `p/${String(p.propertyNo).toLowerCase()}/index.html`), alias);
+}
 for (const [d, dSlug] of Object.entries(districtSlug)) write(path.join(dist,`district/${dSlug}/index.html`), aggregatePage('district', d, rawData.filter(p=>p.district===d)));
 for (const [u, uSlug] of Object.entries(usageSlug)) write(path.join(dist,`usage/${uSlug}/index.html`), aggregatePage('usage', u, rawData.filter(p=>p.usage===u)));
 write(path.join(dist,'404.html'), notFoundPage());
