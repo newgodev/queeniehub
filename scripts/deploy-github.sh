@@ -32,3 +32,6 @@ fi
 git -c user.name="QueenieHub Bot" -c user.email="bot@queeniehub.estate" commit -q -m "$MSG"
 git push -q origin main
 echo "Pushed to GitHub: $(git rev-parse --short HEAD)"
+
+# ---- IndexNow (Bing / AI search) ----
+python3 scripts/indexnow.py || true
