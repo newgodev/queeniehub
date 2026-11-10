@@ -265,7 +265,7 @@ function card(p, opts = {}) {
   const b = p._building;
   const tags = p.tags.length ? p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('') : '<span class="tag muted">公開資料待核</span>';
   return `<article class="listing-card" data-search="${esc([p.name,p.nameEn,p.district,p.usage,p.categoryLabel,p.address,p.propertyNo,p.tags.join(' ')].join(' '))}" data-district="${esc(p.district)}" data-usage="${esc(p.usage)}" data-category="${esc(p.category)}">
-    <div class="card-top"><span class="eyebrow">${esc(p.district)} · ${esc(categoryLabel(p))}</span><span class="code">${esc(p.propertyNo)}</span></div>
+    <div class="card-top"><span class="eyebrow">${esc(p.district)} · ${esc(categoryLabel(p))}</span><span class="card-top-right"><span class="code">${esc(p.propertyNo)}</span>${freshBadge(p)}</span></div>
     <h3><a href="${href}">${esc(p.name)}</a></h3>
     <p class="card-address">${esc(p.address)} · ${esc(p.usage)}</p>
     <div class="card-stats"><strong>${esc(p.size || '面積請查詢')}</strong><span>${esc(price(p))}</span></div>
@@ -331,9 +331,9 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
 <meta name="twitter:card" content="${publicOrigin ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">${publicOrigin ? `<meta name="twitter:image" content="${publicOrigin}/og-cover.png">` : ''}
 <link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${structured}</script></head><body>
 <a class="skip-link" href="#main">跳至主要內容</a>
-<header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
+<header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='tools'?'active':''}" href="/match/">配對</a><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/compare/">比較</a><a class="${active==='guides'?'active':''}" href="/guides/">指南</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>
-<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><a href="/kwun-tong-industrial-for-rent/">觀塘工廈放租</a><a href="/kwun-tong-office-for-rent/">觀塘寫字樓放租</a><a href="/kowloon-bay-office/">九龍灣寫字樓</a><a href="/cheung-sha-wan-industrial-for-sale/">長沙灣工廈出售</a><a href="/tuen-mun-industrial-for-rent/">屯門工廈放租</a><a href="/wong-chuk-hang-commercial/">黃竹坑商業地產</a><span>資料更新：${dataDate} 抓取</span></div></footer>
+<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/match/">配對器</a><a href="/budget/">預算計算器</a><a href="/compare/">大廈比較</a><a href="/brief/">查詢 Brief</a><a href="/use/">按用途搵盤</a><a href="/guides/">指南</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><a href="/kwun-tong-industrial-for-rent/">觀塘工廈放租</a><a href="/kwun-tong-office-for-rent/">觀塘寫字樓放租</a><a href="/kowloon-bay-office/">九龍灣寫字樓</a><a href="/cheung-sha-wan-industrial-for-sale/">長沙灣工廈出售</a><a href="/tuen-mun-industrial-for-rent/">屯門工廈放租</a><a href="/wong-chuk-hang-commercial/">黃竹坑商業地產</a><span>資料更新：${dataDate} 抓取</span></div></footer>
 <div class="compare-bar" id="compareBar" hidden><div class="compare-info"><strong id="compareCount">0</strong><span>個盤源已選</span><div class="compare-list" id="compareList"></div></div><div class="compare-actions"><a class="primary-button" id="compareSend" href="#" target="_blank" rel="noopener">WhatsApp 一次查詢</a><button class="ghost-button" type="button" id="compareClear">清除</button></div></div>
 <script src="/app.js" defer></script></body></html>`;
 }
@@ -675,7 +675,7 @@ function detail(p) {
   const b = p._building;
   const canonical = pageUrl(listingPath(p));
   const tags = p.tags.length ? p.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('') : '<span class="tag muted">公開資料待核</span>';
-  const fields = [['地區',p.district],['用途',p.usage],['樓層',p.floor||'公開資料未列明'],['面積',p.size||'公開資料未列明'],['物業編號',p.propertyNo],['廣告日期',p.publishDate?String(p.publishDate).slice(0,10):'公開資料未列明']];
+  const fields = [['地區',p.district],['用途',p.usage],['樓層',p.floor||'公開資料未列明'],['面積',p.size||'公開資料未列明'],['物業編號',p.propertyNo],['廣告日期',p.publishDate?String(p.publishDate).slice(0,10):'公開資料未列明'],['資料新鮮度',freshLabel(p).label]];
   const crumb = [
     { label: '首頁', href: '/' },
     { label: p.district, href: `/district/${districtSlug[p.district] || slug(p.district)}` },
@@ -869,7 +869,7 @@ function home() {
     const pCount = rawData.filter(p=>p.district===d).length;
     return `<a class="district-card" href="/district/${districtSlug[d]}/"><span>${esc(d)}</span><strong>${bCount}</strong><small>幢大廈 · ${pCount} 個盤源 ↗</small></a>`;
   }).join('');
-  const body = `<section class="hero"><div class="hero-copy"><span class="eyebrow inverse">QUEENIE / COMMERCIAL INDEX</span><h1>由大廈開始，<br>搵到啱你<em>做生意</em>嘅地方。</h1><p>先睇大廈嘅地址、用途、面積同價格範圍，再睇呢幢大廈現有嘅出售同放租盤源。唔使逐個 listing 猜。</p><a class="hero-cta" href="/buildings/">睇全部大廈 <span>↗</span></a></div><div class="hero-aside"><div class="orbit"><span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span><span class="orbit-dot dot-c"></span><div><b>${buildings.length}</b><small>BUILDINGS<br>INDEXED</small></div></div><p>公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。</p></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START WITH BUILDINGS</span><h2>先揀一幢大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${featuredBuildings.map(buildingCard).join('')}</div></section><section class="intent-section"><div class="section-heading"><div><span class="section-label">POPULAR SEARCHES</span><h2>最多人搵嘅組合</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="intent-strip">${intents.map(i => `<a class="intent-chip" href="/${i.slug}/"><strong>${esc(i.h1)}</strong><span>${esc(i.district)} · 面積及呎租參考 ↗</span></a>`).join('')}</div></section><section class="district-section"><div class="section-heading"><div><span class="section-label">BROWSE BY AREA</span><h2>按地區搵大廈</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="district-grid">${districtCards}</div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">FRESH LISTINGS</span><h2>最新公開盤源</h2></div><a href="/listings/">開啟完整篩選 ↗</a></div><div class="listing-grid">${featuredListings.map(card).join('')}</div></section><section class="trust-strip"><div><span class="section-label">HOW IT WORKS</span><h2>由大廈資料到聯絡，唔使兜路。</h2></div><div class="steps"><span><b>01</b>揀大廈睇概況</span><span><b>02</b>比較面積同價格</span><span><b>03</b>WhatsApp 核對盤況</span></div></section>`;
+  const body = `<section class="hero"><div class="hero-copy"><span class="eyebrow inverse">QUEENIE / COMMERCIAL INDEX</span><h1>由大廈開始，<br>搵到啱你<em>做生意</em>嘅地方。</h1><p>先睇大廈嘅地址、用途、面積同價格範圍，再睇呢幢大廈現有嘅出售同放租盤源。唔使逐個 listing 猜。</p><a class="hero-cta" href="/buildings/">睇全部大廈 <span>↗</span></a></div><div class="hero-aside"><div class="orbit"><span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span><span class="orbit-dot dot-c"></span><div><b>${buildings.length}</b><small>BUILDINGS<br>INDEXED</small></div></div><p>公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。</p></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START WITH BUILDINGS</span><h2>先揀一幢大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${featuredBuildings.map(buildingCard).join('')}</div></section><section class="tool-strip"><div class="section-heading"><div><span class="section-label">TOOLS</span><h2>唔想逐個盤睇？用工具收窄</h2></div><a href="/match/">開始配對 ↗</a></div><div class="tool-strip-grid"><a class="tool-tile" href="/match/"><span>01</span><strong>物業配對器</strong><small>六個問題，睇最接近嘅盤</small></a><a class="tool-tile" href="/budget/"><span>02</span><strong>租金預算</strong><small>計月租、按金、佣金</small></a><a class="tool-tile" href="/compare/"><span>03</span><strong>大廈比較</strong><small>最多四幢並排對比</small></a><a class="tool-tile" href="/brief/"><span>04</span><strong>查詢 Brief</strong><small>列印睇樓清單</small></a><a class="tool-tile" href="/use/"><span>05</span><strong>按業務搵盤</strong><small>電商、物流、工作室</small></a></div></section><section class="intent-section"><div class="section-heading"><div><span class="section-label">POPULAR SEARCHES</span><h2>最多人搵嘅組合</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="intent-strip">${intents.map(i => `<a class="intent-chip" href="/${i.slug}/"><strong>${esc(i.h1)}</strong><span>${esc(i.district)} · 面積及呎租參考 ↗</span></a>`).join('')}</div></section><section class="district-section"><div class="section-heading"><div><span class="section-label">BROWSE BY AREA</span><h2>按地區搵大廈</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="district-grid">${districtCards}</div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">FRESH LISTINGS</span><h2>最新公開盤源</h2></div><a href="/listings/">開啟完整篩選 ↗</a></div><div class="listing-grid">${featuredListings.map(card).join('')}</div></section><section class="trust-strip"><div><span class="section-label">HOW IT WORKS</span><h2>由大廈資料到聯絡，唔使兜路。</h2></div><div class="steps"><span><b>01</b>揀大廈睇概況</span><span><b>02</b>比較面積同價格</span><span><b>03</b>WhatsApp 核對盤況</span></div></section>`;
   return layout({title:'香港工商大廈及盤源索引｜觀塘工廈、寫字樓、商舖｜QueenieHub',description:'由大廈開始搵香港工商物業：大廈地址、用途、面積及價格範圍，附現有出售及放租公開盤源。資料更新 2026-11-08。',canonical:pageUrl('/'),body,keywords:'香港工商大廈, 香港工廈, 觀塘工廈, 寫字樓放租, 工商舖'});
 }
 function aggregatePage(type, value, list) {
@@ -904,13 +904,13 @@ function methodPage() {
 <section class="page-intro"><span class="section-label">DATA METHOD</span><h1>資料點樣整理，同你講清楚。</h1><p>網站唔會將估計當成事實。每一頁都分開「公開盤源資料」、「大廈客觀資料」同「仍需向代理核對」三部分。</p></section>
 <section class="entity-block"><h2>整理流程</h2><ol class="source-list"><li>由公開代理頁面整理物業編號、地區、用途、出售／放租、面積、價格及廣告日期。</li><li>將同一幢大廈嘅盤源聚合，建立大廈頁、地區頁、用途頁及獨立盤源頁。</li><li>對落成年份、層數、升降機等資料，只有在公開來源交叉核對後才會放入客觀資料區。</li><li>網站會明確提示價格、盤況、面積及可用性需要重新核對，唔將舊快照當成即時保證。</li></ol></section>
 <section class="entity-block"><h2>快照及限制</h2><p>本次資料快照日期：${dataDate}。網站係搜尋及比較入口，唔係實時交易系統，亦唔代表任何盤源一定仍然有效。AI、搜尋器或客人引用資料時，都應以代理最新確認為準。</p></section>`;
-  return layout({title:'資料方法｜香港工商大廈及盤源公開資料整理與核對原則說明網站',description:'QueenieHub 解釋香港工商大廈及盤源資料來源、整理方法、交叉核對原則、資料快照日期及價格盤況限制。',canonical:pageUrl('/methodology'),body,keywords:'商業地產資料方法,香港工廈資料,寫字樓盤源,物業資料核對'});
+  return layout({title:'資料方法｜香港工商大廈及盤源公開資料點樣整理、核對及更新做法',description:'QueenieHub 解釋香港工商大廈及盤源資料來源、整理方法、交叉核對原則、資料快照日期及價格盤況限制。',canonical:pageUrl('/methodology'),body,keywords:'商業地產資料方法,香港工廈資料,寫字樓盤源,物業資料核對'});
 }
 function contactPage() {
   const body = `${breadcrumbHtml([{label:'首頁',href:'/'},{label:'聯絡 Queenie'}])}
 <section class="page-intro"><span class="section-label">CONTACT</span><h1>講你想搵邊區、咩用途、幾大面積。</h1><p>你可以先講地區、工廈／寫字樓／商舖、出售定放租、預算及大約面積，Queenie 再按公開盤源同你核對。</p><div class="hero-actions"><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent('你好，我想查詢香港商業地產。地區／用途／出售或放租／面積或預算：')}">WhatsApp 查詢 ↗</a><a class="secondary-button dark" href="/listings/">先睇全部盤源</a></div></section>
 <section class="entity-block"><h2>查詢時可以提供</h2><ul class="source-list"><li>想搵嘅地區，例如觀塘、九龍灣、長沙灣。</li><li>用途，例如工廈、寫字樓、商舖或工作室。</li><li>出售／放租、預算、面積及樓層要求。</li><li>如果已經睇中某個盤，直接提供物業編號會最快。</li></ul></section>`;
-  return layout({title:'聯絡 Queenie｜香港工廈、寫字樓及商業盤源查詢入口網站',description:'聯絡 Queenie 查詢觀塘、九龍灣、長沙灣等香港工商大廈、工廈、寫字樓及商業物業公開盤源。',canonical:pageUrl('/contact'),body,keywords:'聯絡Queenie,香港工廈查詢,觀塘寫字樓,商業物業放租'});
+  return layout({title:'聯絡 Queenie｜香港工廈、寫字樓及商業盤源查詢入口網站',description:'聯絡 Queenie 查詢觀塘、九龍灣、長沙灣等香港工商大廈、工廈、寫字樓及商業物業公開盤源，可直接 WhatsApp 查詢。',canonical:pageUrl('/contact'),body,keywords:'聯絡Queenie,香港工廈查詢,觀塘寫字樓,商業物業放租'});
 }
 
 
@@ -1006,6 +1006,778 @@ function notFoundPage() {
 
 /* ---------- build ---------- */
 fs.rmSync(dist,{recursive:true,force:true}); mkdir(dist);
+/* ===================== tool pages: shared ===================== */
+function toolPage({ kicker, heading, lede, body, title, description, canonical, jsonLd = '', keywords, extraClass = '' }) {
+  const crumb = breadcrumbHtml([
+    { label: '首頁', href: '/' },
+    { label: heading }
+  ]);
+  const page = `${crumb}
+<section class="tool-hero">
+  <p class="entity-kicker">${esc(kicker)}</p>
+  <h1>${esc(heading)}</h1>
+  <p class="tool-lede">${lede}</p>
+</section>
+${body}`;
+  return layout({
+    title,
+    description,
+    canonical,
+    body: page,
+    active: 'tools',
+    jsonLd,
+    keywords: keywords || '香港工商舖, 工廈放租, 寫字樓, 商業地產, QueenieHub'
+  });
+}
+
+function toolJsonLd(name, canonical, description) {
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': `${pageUrl(canonical)}#page`,
+        url: pageUrl(canonical),
+        name,
+        description,
+        inLanguage: 'zh-HK',
+        isPartOf: { '@id': `${publicOrigin || ''}/#website` }
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '首頁', item: pageUrl('/') },
+          { '@type': 'ListItem', position: 2, name, item: pageUrl(canonical) }
+        ]
+      }
+    ]
+  });
+}
+
+/* ===================== /match/ ===================== */
+function matchPage() {
+  const districts = [...new Set(rawData.map(p => p.district))].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+  const body = `<section class="tool-wrap">
+  <form id="matchForm" class="tool-card" novalidate>
+    <div class="tool-steps">
+      <fieldset class="tool-step">
+        <legend><span>01</span>你想租定買？</legend>
+        <div class="chip-row">
+          <label class="chip"><input type="radio" name="deal" value="rent" checked><span>放租</span></label>
+          <label class="chip"><input type="radio" name="deal" value="sale"><span>出售</span></label>
+          <label class="chip"><input type="radio" name="deal" value="any"><span>兩樣都睇</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="tool-step">
+        <legend><span>02</span>心水地區</legend>
+        <label class="select-field">地區
+          <select name="district">
+            <option value="">任何地區</option>
+            ${districts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+          </select>
+        </label>
+      </fieldset>
+      <fieldset class="tool-step">
+        <legend><span>03</span>物業用途</legend>
+        <div class="chip-row">
+          <label class="chip"><input type="radio" name="usage" value="any" checked><span>無所謂</span></label>
+          <label class="chip"><input type="radio" name="usage" value="industrial"><span>工廈／工貿</span></label>
+          <label class="chip"><input type="radio" name="usage" value="office"><span>寫字樓</span></label>
+          <label class="chip"><input type="radio" name="usage" value="shop"><span>商舖／陳列</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="tool-step">
+        <legend><span>04</span>需要幾大？</legend>
+        <div class="chip-row">
+          <label class="chip"><input type="radio" name="size" value="any" checked><span>無所謂</span></label>
+          <label class="chip"><input type="radio" name="size" value="s"><span>1,000 呎以下</span></label>
+          <label class="chip"><input type="radio" name="size" value="m"><span>1,000–2,000 呎</span></label>
+          <label class="chip"><input type="radio" name="size" value="l"><span>2,000–5,000 呎</span></label>
+          <label class="chip"><input type="radio" name="size" value="xl"><span>5,000 呎以上</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="tool-step">
+        <legend><span>05</span>預算上限</legend>
+        <label class="input-field">每月租金上限（HKD）
+          <input type="number" name="budget" min="0" step="1000" placeholder="例如 30000">
+        </label>
+        <label class="input-field">買入價上限（HKD）
+          <input type="number" name="buyBudget" min="0" step="100000" placeholder="例如 8000000">
+        </label>
+      </fieldset>
+      <fieldset class="tool-step">
+        <legend><span>06</span>必要條件</legend>
+        <div class="chip-row">
+          <label class="chip"><input type="checkbox" name="needs" value="裝修"><span>已有裝修</span></label>
+          <label class="chip"><input type="checkbox" name="needs" value="近港鐵"><span>近港鐵</span></label>
+          <label class="chip"><input type="checkbox" name="needs" value="海景"><span>海景／開揚</span></label>
+          <label class="chip"><input type="checkbox" name="needs" value="大面積"><span>大面積</span></label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="tool-actions">
+      <button class="primary-button" type="submit">睇配對結果 <span>↗</span></button>
+      <button class="ghost-button" type="reset">重設</button>
+      <span class="tool-note">全部計算喺你部手機／電腦完成，唔會上傳任何資料。</span>
+    </div>
+  </form>
+
+  <section id="matchResult" class="tool-result" hidden aria-live="polite">
+    <div class="result-head">
+      <p class="entity-kicker">MATCH RESULT</p>
+      <h2 id="matchHeadline">最接近你要求嘅盤源</h2>
+      <p id="matchSummary" class="tool-lede"></p>
+    </div>
+    <div id="matchDistricts" class="district-pick"></div>
+    <div id="matchList" class="result-list"></div>
+    <div class="result-cta">
+      <div>
+        <strong>想我幫你直接配對？</strong>
+        <p>將上面答案一次過發去 WhatsApp，唔需要再重複講。</p>
+      </div>
+      <a id="matchWa" class="primary-button" href="${whatsappBase}" rel="noopener">WhatsApp 發送需求 <span>↗</span></a>
+    </div>
+    <p class="tool-disclaimer">配對結果只按公開資料嘅地區、用途、面積及叫價排序，唔代表實際可租／可售，最終以代理核實為準。</p>
+  </section>
+
+  <section class="tool-card tool-explain">
+    <h2>配對器點樣運作</h2>
+    <ol class="number-list">
+      <li><strong>先篩租售</strong>：你揀放租就唔會顯示出售盤，反之亦然。</li>
+      <li><strong>再計地區及用途</strong>：地區完全符合會加分，用途以工廈、寫字樓、商舖三大類歸納。</li>
+      <li><strong>面積用區間</strong>：你揀 1,000–2,000 呎，系統會優先顯示範圍內盤源，超出範圍會按差距扣分。</li>
+      <li><strong>預算用上限</strong>：租金以每月總額比較，售價以叫價比較。</li>
+      <li><strong>必要條件加分</strong>：例如「已有裝修」、「近港鐵」會按公開標籤及地區加權。</li>
+    </ol>
+    <p>結果只顯示頭 6 個最接近嘅盤源，避免一次過給你幾十個選項。想睇全部，仍然可以去 <a class="inline-link" href="/listings/">盤源索引</a> 自己篩。</p>
+  </section>
+</section>
+<noscript><p class="tool-note">配對器需要 JavaScript。你可以直接去 <a href="/listings/">盤源索引</a> 或用 WhatsApp 查詢。</p></noscript>`;
+  return toolPage({
+    kicker: 'PROPERTY MATCHER',
+    heading: '六個問題，搵出最接近嘅盤源',
+    lede: '唔需要識講行話。揀租定買、地區、用途、面積同預算，即刻睇邊幾個盤最接近你要求，再一按 WhatsApp 發送完整需求。',
+    body,
+    title: '工商物業配對器｜按地區、面積及預算搵盤源｜QueenieHub',
+    description: '輸入租售、地區、用途、面積及預算，即時配對香港公開工商盤源，並產生可直接發送的 WhatsApp 查詢內容。',
+    canonical: '/match/',
+    jsonLd: toolJsonLd('工商物業配對器', '/match/', '按地區、用途、面積及預算配對香港工商盤源。')
+  });
+}
+
+/* ===================== /budget/ ===================== */
+function budgetPage() {
+  const body = `<section class="tool-wrap">
+  <div class="tool-grid">
+    <form id="budgetForm" class="tool-card">
+      <h2>輸入租務條件</h2>
+      <div class="field-grid">
+        <label class="input-field">面積（平方呎）
+          <input type="number" name="area" min="1" step="10" value="1200" required>
+        </label>
+        <label class="input-field">呎租（HKD／呎）
+          <input type="number" name="rate" min="0" step="0.5" value="16" required>
+        </label>
+        <label class="input-field">按金（月租倍數）
+          <input type="number" name="deposit" min="0" max="12" step="1" value="3">
+        </label>
+        <label class="input-field">免租期（日）
+          <input type="number" name="fitout" min="0" max="180" step="1" value="14">
+        </label>
+        <label class="input-field">代理佣金（月租倍數）
+          <input type="number" name="commission" min="0" max="2" step="0.5" value="0.5">
+        </label>
+        <label class="input-field">管理費（HKD／呎）
+          <input type="number" name="mgmt" min="0" step="0.1" value="2.5">
+        </label>
+      </div>
+      <p class="tool-note">以上只作估算。實際按金、免租期、佣金及管理費由業主及代理合約決定。</p>
+    </form>
+
+    <section class="tool-card calc-card" aria-live="polite">
+      <h2>每月及起租支出</h2>
+      <dl class="calc-out">
+        <div><dt>每月租金</dt><dd id="outRent">—</dd></div>
+        <div><dt>每年租金</dt><dd id="outYear">—</dd></div>
+        <div><dt>每月管理費</dt><dd id="outMgmt">—</dd></div>
+        <div><dt>每月總支出</dt><dd id="outMonthly" class="strong">—</dd></div>
+        <div><dt>按金</dt><dd id="outDeposit">—</dd></div>
+        <div><dt>代理佣金</dt><dd id="outCommission">—</dd></div>
+        <div><dt>起租前一次過支出</dt><dd id="outUpfront" class="strong">—</dd></div>
+      </dl>
+      <p class="tool-note">未包括裝修、搬遷、差餉地租、水電按金、保險及印花稅（如有）。</p>
+      <a id="budgetWa" class="primary-button" href="${whatsappBase}" rel="noopener">用呢個預算搵盤 <span>↗</span></a>
+    </section>
+  </div>
+
+  <section class="tool-card tool-explain">
+    <h2>租工商物業，通常有邊幾筆錢</h2>
+    <ul class="plain-list">
+      <li><strong>租金</strong>：多數以建築面積計，實際可用面積可能較細，簽約前要問清楚係建築定實用。</li>
+      <li><strong>按金</strong>：市場常見兩至三個月租，視物業類型及業主取態。</li>
+      <li><strong>免租期</strong>：用嚟裝修、搬遷，通常一至四星期，要寫入租約。</li>
+      <li><strong>代理佣金</strong>：租務常見半個月租至一個月租，由業主、租客或雙方分擔，簽約前要確認。</li>
+      <li><strong>管理費</strong>：部分租金已包，部分另計，工廈差異可以好大。</li>
+      <li><strong>其他</strong>：差餉、地租、水電按金、裝修及消防工程，通常另計。</li>
+    </ul>
+    <p>如果你輸入嘅呎租明顯低於同區水平，通常代表面積計算方式、樓層、裝修或大廈條件有差異，唔一定係「抵」。可以先用 <a class="inline-link" href="/market/">呎租參考頁</a> 比較同區中位數。</p>
+  </section>
+</section>`;
+  return toolPage({
+    kicker: 'RENT BUDGET',
+    heading: '租金預算計算器',
+    lede: '輸入面積同呎租，即刻睇每月租金、每年租金、按金、佣金同起租前要準備幾多錢。',
+    body,
+    title: '工商物業租金預算計算器｜按金、佣金及起租支出｜QueenieHub',
+    description: '輸入面積及呎租，即時估算每月租金、每年租金、按金、代理佣金、管理費及起租前一次過支出，方便比較不同盤源。',
+    canonical: '/budget/',
+    jsonLd: toolJsonLd('租金預算計算器', '/budget/', '估算香港工商物業租金、按金及佣金支出。')
+  });
+}
+
+/* ===================== /compare/ ===================== */
+function comparePage() {
+  const groups = {};
+  for (const b of buildings) {
+    (groups[b.district] ||= []).push(b);
+  }
+  const firstDistrict = Object.entries(groups).sort((a, b) => b[1].length - a[1].length)[0][0];
+  const listing = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length || a.localeCompare(b, 'zh-Hant')).map(d => `
+    <details class="compare-group" ${d === firstDistrict ? 'open' : ''}>
+      <summary>${esc(d)} <span>${groups[d].length} 幢</span></summary>
+      <div class="compare-options">
+        ${groups[d].sort((a, b) => (b.sales.length + b.rents.length) - (a.sales.length + a.rents.length) || a.name.localeCompare(b.name, 'zh-Hant')).map(b => {
+          const total = b.sales.length + b.rents.length;
+          return `<label class="compare-option${total ? '' : ' is-empty'}">
+          <input type="checkbox" name="building" value="${esc(b.slug)}">
+          <span class="compare-option-name">${esc(b.name)}</span>
+          <span class="compare-option-meta">${total ? `${total} 個公開盤源` : '暫無公開盤源'}</span>
+        </label>`;
+        }).join('')}
+      </div>
+    </details>`).join('');
+
+  const body = `<section class="tool-wrap">
+  <section class="tool-card">
+    <div class="compare-head">
+      <h2>揀最多 4 幢大廈比較</h2>
+      <p class="compare-count" id="compareHint">已揀 0／4 幢</p>
+    </div>
+    <p class="tool-note">用搜尋快速搵大廈，或展開地區逐幢揀。</p>
+    <label class="search-field compare-search"><span>⌕</span>
+      <input id="compareSearch" type="search" placeholder="搜尋大廈名稱或地址，例如 日昇、萬兆豐、勵豐" autocomplete="off" aria-label="搜尋大廈名稱或地址">
+    </label>
+    <div id="compareGroups" class="compare-picker">${listing}</div>
+  </section>
+
+  <section id="compareResult" class="tool-card compare-result" hidden aria-live="polite">
+    <h2>比較結果</h2>
+    <div class="table-wrap"><table class="compare-table" id="compareTable"></table></div>
+    <div class="result-cta">
+      <div>
+        <strong>想我幫你比較呢幾幢？</strong>
+        <p>一次過發送去 WhatsApp，我直接回覆現有盤源同差異。</p>
+      </div>
+      <a id="compareWa" class="primary-button" href="${whatsappBase}" rel="noopener">WhatsApp 查詢 <span>↗</span></a>
+    </div>
+  </section>
+
+  <section class="tool-card tool-explain">
+    <h2>比較大廈時，最值得睇邊幾項</h2>
+    <ul class="plain-list">
+      <li><strong>盤源數量</strong>：同一幢大廈有幾個盤，代表你嘅選擇有幾多，亦反映業主放盤活躍程度。</li>
+      <li><strong>面積範圍</strong>：同一幢可以有細單位同全層，差異可以幾倍。</li>
+      <li><strong>呎租或呎價</strong>：只作參考，樓層、裝修、景觀會令同一幢出現明顯差距。</li>
+      <li><strong>交通</strong>：最近港鐵站只作方向，實際步行要計上落斜及行人路。</li>
+      <li><strong>用途限制</strong>：大廈公開用途唔等於你一定可以做你想做嘅行業，要睇地契、公契及屋宇署批准。</li>
+    </ul>
+    <p>比較完，可以再用 <a class="inline-link" href="/match/">配對器</a> 按你實際面積同預算收窄範圍。</p>
+  </section>
+</section>`;
+
+  return toolPage({
+    kicker: 'BUILDING COMPARE',
+    heading: '大廈比較工具',
+    lede: '一次過比較最多四幢大廈：盤源數量、面積範圍、呎租呎價參考、交通及用途限制。',
+    body,
+    title: '工商大廈比較工具｜盤源數量、面積及呎租對比｜QueenieHub',
+    description: '揀選最多四幢香港工商大廈，比較公開盤源數量、面積範圍、呎租呎價參考、交通及用途限制，方便快速收窄選擇。',
+    canonical: '/compare/',
+    jsonLd: toolJsonLd('大廈比較工具', '/compare/', '比較香港工商大廈的盤源、面積、呎租及交通。')
+  });
+}
+
+/* ===================== /brief/ ===================== */
+function briefPage() {
+  const body = `<section class="tool-wrap">
+  <section class="tool-card">
+    <div class="brief-head">
+      <div>
+        <h2>你嘅查詢清單</h2>
+        <p class="tool-note">喺任何盤源卡按「＋ 比較」加入，呢頁會自動整理成一張可以列印或儲存嘅睇樓 Brief。</p>
+      </div>
+      <div class="brief-actions">
+        <button class="ghost-button" type="button" id="briefPrint">列印／儲存 PDF</button>
+        <button class="ghost-button" type="button" id="briefClear">清空</button>
+      </div>
+    </div>
+    <div id="briefEmpty" class="empty-state">
+      <p>清單暫時係空。</p>
+      <p><a class="inline-link" href="/listings/">去盤源索引</a> 揀幾個盤，或者用 <a class="inline-link" href="/match/">配對器</a> 搵最接近嘅盤源。</p>
+    </div>
+    <div id="briefSheet" class="brief-sheet" hidden></div>
+  </section>
+
+  <section class="tool-card tool-explain">
+    <h2>呢張 Brief 有咩用</h2>
+    <ul class="plain-list">
+      <li><strong>俾老闆或同事睇</strong>：一頁睇清地區、面積、叫價同大廈資料，唔需要轉發十條連結。</li>
+      <li><strong>睇樓前準備</strong>：每個盤下面列出要問嘅問題，例如實際面積、管理費、免租期、可用日期。</li>
+      <li><strong>比較同區選擇</strong>：同一區幾個盤放埋一齊，差異即刻見到。</li>
+      <li><strong>私隱</strong>：清單只存喺你部裝置嘅瀏覽器，唔會上傳，亦唔會顯示俾其他人。</li>
+    </ul>
+  </section>
+</section>`;
+
+  return toolPage({
+    kicker: 'VIEWING BRIEF',
+    heading: '物業查詢 Brief',
+    lede: '將你揀嘅盤源整理成一頁睇樓清單，可以列印或存成 PDF，直接俾老闆、同事或自己睇樓時用。',
+    body,
+    title: '工商物業睇樓 Brief｜列印查詢清單｜QueenieHub',
+    description: '把已選的工商盤源整理成可列印的睇樓清單，包含面積、叫價、大廈資料，以及需要向代理確認的問題，作為睇樓準備。',
+    canonical: '/brief/',
+    jsonLd: toolJsonLd('物業查詢 Brief', '/brief/', '把已選盤源整理成可列印的睇樓清單。')
+  });
+}
+
+/* ===================== use-case pages ===================== */
+const useCases = [
+  {
+    slug: 'ecommerce-warehouse',
+    kicker: 'E-COMMERCE',
+    h1: '電商及網店倉庫',
+    title: '電商倉庫租盤｜網店貨倉選址、面積及上落貨｜QueenieHub',
+    description: '按出貨頻率、面積、上落貨及交通，整理香港適合電商及網店的工商倉庫盤源，並列出選址時要逐項核實的條件。',
+    filter: p => ['工商', '工業'].includes(p.usage) && (p.sizeValue || 0) >= 1200,
+    intro: [
+      '電商揀倉，最常錯嘅一步係只看租金，忽略每日出貨動線。同樣 1,500 呎，一個有貨𨋢直達停車場、另一個要推貨行斜路，實際人手成本可以差好遠。',
+      '呢頁集中整理現有公開盤源入面，面積較適合做小至中型電商倉嘅選擇，並列出落單前應該核實嘅條件。'
+    ],
+    fits: [
+      ['每日出貨量穩定', '需要固定打包位、貨架區及收貨區，唔可以同寫字樓混用。'],
+      ['有第三方物流配合', '要預留貨車短暫停泊及上落貨位置，否則司機唔願意等。'],
+      ['需要一個小辦公角落', '部分工貿樓可以做陳列、客服及倉存三合一，減少另租寫字樓。']
+    ],
+    checks: [
+      '貨𨋢數量、載重及尺寸，繁忙時間要排幾耐。',
+      '車輛可否直達樓層或卸貨區，有冇時段限制。',
+      '單位樓底高度，能否放兩層貨架。',
+      '電力容量是否足夠叉電、包裝機或冷氣。',
+      '大廈是否容許你嘅行業（物流、批發）及有冇消防要求。',
+      '管理費、垃圾處理費及超時出入安排。'
+    ],
+    faq: [
+      ['網店一定要租工廈嗎？', '不一定。出貨量細、以自取為主可以先用小型工作室或共享倉；當每日件數穩定、需要貨架及收貨區，才值得租獨立單位。'],
+      ['1,200 呎夠做電商倉嗎？', '視貨品體積。以小型配件、美妝、服飾為例，1,200 呎通常可以應付每日數十至一百多張訂單，但仍要預留打包及收貨通道。'],
+      ['租金之外仲有咩固定成本？', '管理費、差餉、水電、保險，以及貨架、打包台等一次性投入。搬入前最好用預算計算器計一次起租總支出。']
+    ]
+  },
+  {
+    slug: 'logistics-warehouse',
+    kicker: 'LOGISTICS',
+    h1: '物流及貨運倉',
+    title: '物流倉租盤｜貨運倉儲選址、樓底、載重及上落貨｜QueenieHub',
+    description: '整理適合物流、貨運及倉儲的香港工商盤源，重點講貨車出入、樓底高度、地台載重及地區接駁，方便實地核對。',
+    filter: p => ['工商', '工業'].includes(p.usage) && (p.sizeValue || 0) >= 2000,
+    intro: [
+      '物流倉的關鍵唔係「有幾大」，而係「貨車入唔入得嚟、入到嚟停幾耐、上落貨要幾多人」。同一區兩個盤，租金相差兩成，但操作成本可以相差三成以上。',
+      '呢頁按面積較大嘅公開盤源整理，適合需要固定貨車出入、存貨及分揀嘅公司作初步篩選。'
+    ],
+    fits: [
+      ['需要長期停泊或輪替貨車', '要有足夠上落貨位置，唔可以只靠路邊臨時停車。'],
+      ['存貨周期較長', '面積大、租金低的區域例如屯門、葵涌、油塘會較適合。'],
+      ['需要分揀及包裝區', '單位形狀要方正，柱位唔好太密，否則貨架排位浪費空間。']
+    ],
+    checks: [
+      '貨櫃車或噸車可否駛入，路面闊度及限高。',
+      '卸貨台數量、預約制度及繁忙時段。',
+      '樓底、地台載重是否適合堆高機。',
+      '消防設備、危險品儲存限制（如有）。',
+      '出入時間是否 24 小時，夜間有冇附加費。',
+      '鄰近主要幹道或口岸的實際車程。'
+    ],
+    faq: [
+      ['屯門倉租金較低，值得搬入嗎？', '如果主要客戶在新界西或需要接駁機場、港珠澳大橋，屯門有成本優勢；但如果客人及員工主要在港島或九龍東，交通時間要一併計入。'],
+      ['工廈同貨倉大廈有咩分別？', '貨倉大廈通常有較大卸貨區及貨𨋢，工廈則視乎樓齡及設計。睇樓時要實地看貨車動線，唔好只看平面圖。'],
+      ['大面積單位通常可以分租嗎？', '部分業主接受分租，但要睇租約、消防及大廈管理規定，唔可以自行間隔了就算。']
+    ]
+  },
+  {
+    slug: 'design-studio',
+    kicker: 'STUDIO',
+    h1: '設計及攝影工作室',
+    title: '設計工作室租盤｜攝影棚選址、樓底及採光｜QueenieHub',
+    description: '整理適合設計工作室、攝影棚及創作團隊的香港工商盤源，重點講樓底、採光、電力、隔音及出入安排，方便實地檢查。',
+    filter: p => ['工商', '寫字樓', '寫字樓及商舖'].includes(p.usage) && (p.sizeValue || 0) >= 400 && (p.sizeValue || 0) <= 3000,
+    intro: [
+      '工作室同倉庫的需求完全相反：唔需要大上落貨，但要好靚嘅採光、夠高樓底、穩定電力，同一個客人願意上門嘅地址。',
+      '呢頁整理現有盤源入面，面積及類型較適合設計、攝影、內容製作團隊嘅選擇。'
+    ],
+    fits: [
+      ['需要拍產品或人像', '樓底高、有自然光、可以控制背景，比商廈單位實用。'],
+      ['團隊 3–12 人', '需要固定工作位加一個會議或拍攝區。'],
+      ['經常有客人到訪', '大廈大堂、電梯及周邊環境會影響專業感。']
+    ],
+    checks: [
+      '樓底高度及橫樑位置，能否放燈架。',
+      '電力負載，拍攝燈及冷氣同時開會否跳掣。',
+      '窗向及日照時間，西斜會影響拍攝。',
+      '隔音及鄰居行業，避免拍攝時被投訴。',
+      '是否容許商業拍攝及偶爾多人到訪。',
+      '大廈可否 24 小時出入，加班拍攝好常見。'
+    ],
+    faq: [
+      ['工廈可以做工作室嗎？', '不少工廈單位實際被用作工作室，但是否合法取決於地契、公契及屋宇署批准的用途。簽約前應該書面確認，唔好只靠口頭。'],
+      ['攝影棚需要特別裝修嗎？', '通常要處理電力、天花路軌、背景牆及隔音。呢部分成本要計入起租預算，亦要業主同意。'],
+      ['細單位夠用嗎？', '純設計團隊 400–800 呎已經可以；如果同時要拍攝，建議 1,000 呎以上才夠分區。']
+    ]
+  },
+  {
+    slug: 'showroom-shop',
+    kicker: 'SHOWROOM',
+    h1: '陳列室及門市',
+    title: '陳列室及門市租盤｜商舖、工商選擇及招牌｜QueenieHub',
+    description: '整理適合產品陳列、門市及客戶體驗店的香港商舖及工商盤源，附人流、用途限制及招牌申請要點，方便逐項核實。',
+    filter: p => ['商舖', '寫字樓及商舖'].includes(p.usage) || p.tags.includes('燈箱'),
+    intro: [
+      '陳列室同純門市唔一樣：客人多數預約而來，唔完全靠街客，但地址同外觀仍然影響信任。工廈陳列室租金低，但要解決「客人願唔願意上樓」呢個問題。',
+      '呢頁整理有商舖用途或明顯展示條件嘅公開盤源，適合需要讓客人親身睇產品嘅業務。'
+    ],
+    fits: [
+      ['產品需要現場體驗', '例如建材、傢俬、電子產品、美容儀器。'],
+      ['以預約制為主', '工廈或樓上陳列室可以降低成本，但要清楚指示及接待安排。'],
+      ['需要招牌或展示窗', '要確認大廈是否容許外牆招牌及相關申請。']
+    ],
+    checks: [
+      '用途是否准許零售或陳列，公契有冇限制。',
+      '人流方向、入口位置及可否設置指示牌。',
+      '樓底、櫥窗及燈光條件。',
+      '消防走火通道及可容納人數。',
+      '是否可以申請招牌，費用及審批時間。',
+      '卸貨及送貨安排，特別是大型產品。'
+    ],
+    faq: [
+      ['工廈可以做陳列室嗎？', '部分工廈單位可作陳列或辦公室用途，但零售、直接銷售可能受地契及公契限制，應先核實。'],
+      ['樓上舖同地舖點揀？', '樓上舖租金低、面積大，適合預約制；地舖人流高但租金及裝修成本高，適合靠街客的業務。'],
+      ['招牌要另外申請嗎？', '大廈外牆招牌通常涉及業主、管理處及屋宇署名義的申請，唔可以自行安裝。']
+    ]
+  },
+  {
+    slug: 'small-office',
+    kicker: 'SMALL OFFICE',
+    h1: '初創及小型辦公室',
+    title: '初創辦公室租盤｜細面積寫字樓及工貿單位｜QueenieHub',
+    description: '整理適合初創、小型團隊的香港細面積寫字樓及工貿單位，附面積、租金水平及簽約前要注意的事項，方便計預算。',
+    filter: p => ['寫字樓', '寫字樓及商舖', '工商'].includes(p.usage) && (p.sizeValue || 0) > 0 && (p.sizeValue || 0) <= 1600,
+    intro: [
+      '初創揀辦公室，最實際嘅三個問題係：租金佔支出幾多、客人上門見唔見到人、租約有冇彈性。面積細反而更難揀，因為每一個位置都要同時做工作、開會同接待。',
+      '呢頁集中整理細面積寫字樓及工貿單位，適合兩至十五人團隊。'
+    ],
+    fits: [
+      ['團隊 2–15 人', '需要穩定網絡、會議空間及合理私隱。'],
+      ['需要客戶到訪', '地址及大堂觀感會直接影響成交信心。'],
+      ['預算優先', '工貿單位通常比純寫字樓平，但用途及配套要逐項確認。']
+    ],
+    checks: [
+      '租金是否已包管理費、冷氣及差餉。',
+      '冷氣時間，超時收費點計。',
+      '網絡供應商覆蓋及可否拉光纖。',
+      '租約年期、免租期、續租及退租條款。',
+      '可否註冊公司及收發信件。',
+      '大廈用途是否准許辦公室。'
+    ],
+    faq: [
+      ['工貿單位同寫字樓有咩分別？', '工貿單位租金通常較低，但用途、消防及大廈配套同純寫字樓不同，部分銀行或客戶會在意地址類型。'],
+      ['最短租約通常幾年？', '市場常見兩年，部分業主接受一年，但租金或按金條件會較緊。'],
+      ['租金以外要預幾多？', '按金、佣金、裝修、傢俬、網絡安裝及水電按金，通常相等於兩至四個月租。']
+    ]
+  }
+];
+
+function useCasePath(cfg) { return `/use/${cfg.slug}/`; }
+
+function useCasePage(cfg) {
+  const items = rawData.filter(cfg.filter).sort((a, b) => (b.sizeValue || 0) - (a.sizeValue || 0));
+  const shown = items.slice(0, 12);
+  const districts = [...new Set(items.map(p => p.district))];
+  const rentN = items.filter(p => p.category === 'rent').length;
+  const saleN = items.filter(p => p.category === 'sale').length;
+  const body = `<section class="page-intro">
+  <p class="entity-kicker">${esc(cfg.kicker)}</p>
+  <h1>${esc(cfg.h1)}</h1>
+  ${cfg.intro.map(t => `<p>${esc(t)}</p>`).join('')}
+  <div class="stat-row">
+    <div><span>相關公開盤源</span><strong>${items.length} 個</strong></div>
+    <div><span>涉及地區</span><strong>${districts.length} 區</strong></div>
+    <div><span>租／售盤源</span><strong>${rentN} 租 · ${saleN} 售</strong></div>
+  </div>
+  <div class="hero-actions"><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent(`你好，我想搵${cfg.h1}類型嘅單位，想講下我嘅面積、地區同預算。`)}" rel="noopener">WhatsApp 講需求 <span>↗</span></a><a class="secondary-button dark" href="/match/">用配對器篩選</a></div>
+</section>
+
+<section class="entity-block">
+  <h2>咩情況適合呢類單位</h2>
+  <div class="fit-grid">
+    ${cfg.fits.map(([t, d]) => `<div class="fit-card"><strong>${esc(t)}</strong><p>${esc(d)}</p></div>`).join('')}
+  </div>
+</section>
+
+<section class="entity-block">
+  <h2>揀盤前要核實嘅條件</h2>
+  <ul class="checklist">${cfg.checks.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+</section>
+
+<section class="entity-block">
+  <h2>目前相關公開盤源（${items.length} 個）</h2>
+  <p>按面積由大到細排列，最多顯示 12 個。全部屬公開廣告資料，實際盤況請向代理核實。</p>
+  <div class="listing-grid">${shown.map(p => card(p, { hideBuilding: false })).join('')}</div>
+  <p><a class="inline-link" href="/listings/">睇全部 ${rawData.length} 個公開盤源 →</a></p>
+</section>
+
+<section class="entity-block">
+  <h2>常見問題</h2>
+  <div class="faq">${cfg.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+</section>
+
+<section class="entity-block">
+  <h2>相關地區及用途</h2>
+  <p>${districts.slice(0, 8).map(d => `<a class="inline-link" href="/district/${districtSlug[d] || slug(d)}/">${esc(d)}</a>`).join(' · ')}</p>
+</section>`;
+
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'WebPage', '@id': `${pageUrl(useCasePath(cfg))}#page`, url: pageUrl(useCasePath(cfg)), name: cfg.h1, description: cfg.description, inLanguage: 'zh-HK' },
+      {
+        '@type': 'FAQPage',
+        mainEntity: cfg.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } }))
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '首頁', item: pageUrl('/') },
+          { '@type': 'ListItem', position: 2, name: '按用途搵盤', item: pageUrl('/use/') },
+          { '@type': 'ListItem', position: 3, name: cfg.h1, item: pageUrl(useCasePath(cfg)) }
+        ]
+      }
+    ]
+  });
+
+  return layout({
+    title: cfg.title,
+    description: cfg.description,
+    canonical: useCasePath(cfg),
+    body: breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '按用途搵盤', href: '/use/' }, { label: cfg.h1 }]) + body,
+    active: 'usage',
+    jsonLd
+  });
+}
+
+function useCaseIndex() {
+  const rows = useCases.map(cfg => {
+    const n = rawData.filter(cfg.filter).length;
+    return `<a class="use-card" href="${useCasePath(cfg)}">
+      <span class="entity-kicker">${esc(cfg.kicker)}</span>
+      <strong>${esc(cfg.h1)}</strong>
+      <p>${esc(cfg.intro[0].slice(0, 62))}…</p>
+      <span class="use-count">${n} 個相關公開盤源 ↗</span>
+    </a>`;
+  }).join('');
+  const body = `<section class="page-intro">
+  <p class="entity-kicker">BY BUSINESS NEED</p>
+  <h1>按你嘅業務搵盤</h1>
+  <p>唔同業務對單位嘅要求差好遠。電商要出貨動線，工作室要樓底同採光，物流要貨車位。呢度按用途整理，每頁都有實際盤源同要核實嘅條件。</p>
+</section>
+<section class="entity-block"><div class="use-grid">${rows}</div></section>`;
+  return layout({
+    title: '按業務用途搵工商盤｜電商、物流及工作室選址｜QueenieHub',
+    description: '按業務需要整理香港工商盤源：電商倉庫、物流倉、設計及攝影工作室、陳列室門市、初創小型辦公室，附選址要點。',
+    canonical: '/use/',
+    body: breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '按用途搵盤' }]) + body,
+    active: 'usage'
+  });
+}
+
+/* ===================== guides ===================== */
+const guides = [
+  {
+    slug: 'industrial-rental-checklist',
+    h1: '租工廈前要核實嘅 12 件事',
+    title: '租工廈前要核實嘅 12 件事｜香港工商租務｜QueenieHub',
+    description: '租工廈前逐項核實：用途、貨𨋢、樓底、電力、消防、管理費、免租期、按金及退租條款，避免簽約後才發現問題。',
+    kicker: 'CHECKLIST',
+    lede: '工廈租約一簽通常兩年。以下 12 項係睇樓時最常被忽略、但事後最難補救嘅地方。',
+    sections: [
+      ['1. 大廈准許用途', '公開盤源寫嘅用途只係分類標籤，唔等於法律上可以做你嘅行業。要睇地契、公契及屋宇署批准用途，涉及特殊行業時應書面確認。'],
+      ['2. 貨𨋢數量及尺寸', '有幾部貨𨋢、載重幾多、門闊幾多、繁忙時間要排幾耐，直接影響你每日運作。最好喺平日下晝實地觀察一次。'],
+      ['3. 樓底及橫樑', '樓底高度決定你可唔可以放兩層貨架或裝天花設備。橫樑位置亦會限制燈光及貨架排位。'],
+      ['4. 電力容量', '冷凍、叉電、大型機器都需要額外電力。要問清楚單位現有電錶容量，加電要唔要申請及費用由邊個負擔。'],
+      ['5. 地台載重', '重型貨物或堆高機需要較高載重。舊式工廈地台限制可能比你想像中低。'],
+      ['6. 消防及走火通道', '單位有冇改動過間隔、走火通道有冇被阻塞、消防設備是否有效，都應該睇清楚。改動前亦要符合相關規定。'],
+      ['7. 上落貨安排', '車輛可否直達、卸貨區有冇時段限制、超時有冇收費、貨物可否放走廊短時間，全部要問管理處。'],
+      ['8. 管理費及附加費', '管理費是否已包在租金內、冷氣是否另計、垃圾處理是否額外收費，要逐項寫入租約或報價。'],
+      ['9. 免租期及裝修審批', '免租期通常用嚟裝修，但裝修圖則可能需要業主及管理處审批，時間要預留。'],
+      ['10. 按金及上期', '市場常見兩至三個月按金，加首月租金。要確認按金幾時退、扣減條件。'],
+      ['11. 退租及復原條款', '好多租約要求退租時將單位復原。呢筆費用可以好大，簽約前要問清楚標準。'],
+      ['12. 續租及提前終止', '有冇續租優先權、提前終止要唔要罰款、可否轉租，呢三項對初創尤其重要。']
+    ],
+    outro: '以上只作一般參考，唔構成法律意見。實際條款以租約為準，涉及重大投資或長期租約時，應諮詢專業人士。'
+  },
+  {
+    slug: 'industrial-usage-restrictions',
+    h1: '工廈用途限制：點樣知道自己做唔做得',
+    title: '工廈用途限制｜地契、公契及屋宇署檢查方法｜QueenieHub',
+    description: '工廈用途限制點樣查：地契、公契、屋宇署批准用途及消防要求，以及簽約前應要求哪些書面證明，避免事後被要求停用。',
+    kicker: 'USAGE RULES',
+    lede: '「業主話可以做」唔等於合法。工廈用途要同時符合幾層規定，缺一層都可能被要求停止使用。',
+    sections: [
+      ['第一層：地契（Government Lease）', '地契規定土地用途，例如工業、倉庫或商住。部分舊工業地段有特定限制，亦有已獲批的豁免或修訂。'],
+      ['第二層：公契（Deed of Mutual Covenant）', '公契規定大廈內各單位的使用限制，可能比地契更嚴，例如禁止零售、餐飲或特定行業。'],
+      ['第三層：屋宇署批准用途', '建築圖則顯示單位原本設計用途。若實際用途與批准圖則不同，可能涉及違例。'],
+      ['第四層：消防及牌照要求', '涉及食肆、教育、補習、醫療、危險品等行業，另有消防及牌照要求，唔可以只靠租約。'],
+      ['實際做法：要求書面確認', '簽約前可要求業主提供地契摘要、公契相關條文、大廈管理處書面回覆，並保留紀錄。'],
+      ['如果已經租了，點算？', '先確認實際風險，再同業主商討補救方案。情況複雜時應尋求專業意見，唔好自行改動單位。']
+    ],
+    outro: '呢頁只作一般說明，唔構成法律意見。個別大廈情況差異很大，應以文件及專業意見為準。'
+  },
+  {
+    slug: 'compare-unit-rate',
+    h1: '點樣比較呎租同呎價，唔會被數字誤導',
+    title: '呎租呎價點比較｜建築面積、實用面積及管理費｜QueenieHub',
+    description: '比較工商物業呎租呎價時要留意建築面積與實用面積、樓層、裝修、管理費，以及叫價與成交價的差異，避免被數字誤導。',
+    kicker: 'HOW TO COMPARE',
+    lede: '同一個地區，呎租可以由十幾元到二十幾元。差距通常唔係「邊個抵」，而係你比較緊唔同嘅東西。',
+    sections: [
+      ['先確認面積定義', '建築面積同實用面積可以相差一至三成。兩者混住比較，呎租會失真。'],
+      ['管理費是否已包', '租金包管理費同唔包，實際支出可以差一成以上。比較時應以「每月總支出」為準。'],
+      ['樓層及景觀', '高層、有窗、有景通常較貴，低層或無窗會平。呢個差距在工廈特別明顯。'],
+      ['裝修及設備', '已有裝修、天花、冷氣、貨𨋢直達，會反映在租金上。空殼單位平，但裝修成本要自己承擔。'],
+      ['叫價唔等於成交', '公開盤源多數是叫價。實際成交受議價、租期、免租期影響。'],
+      ['用中位數而唔係平均數', '樣本少時平均數容易被極端值拉高。中位數較能反映典型水平。']
+    ],
+    outro: '你可以用 <a href="/market/">呎租及呎價參考頁</a> 睇本地區中位數，再用 <a href="/budget/">預算計算器</a> 計實際每月支出。'
+  }
+];
+
+function guidePath(g) { return `/guides/${g.slug}/`; }
+
+function guidePage(g) {
+  const body = `<section class="page-intro">
+  <p class="entity-kicker">${esc(g.kicker)}</p>
+  <h1>${esc(g.h1)}</h1>
+  <p>${esc(g.lede)}</p>
+</section>
+<section class="entity-block guide-body">
+  ${g.sections.map(([h, p]) => `<h2>${esc(h)}</h2><p>${p.includes('<a ') ? p : esc(p)}</p>`).join('')}
+  <p class="tool-note">${g.outro.includes('<a ') ? g.outro : esc(g.outro)}</p>
+  <div class="hero-actions"><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent('你好，我睇完你哋嘅指南，想問下工商物業嘅實際情況。')}" rel="noopener">有問題直接問 <span>↗</span></a><a class="secondary-button dark" href="/guides/">睇其他指南</a></div>
+</section>`;
+  return layout({
+    title: g.title,
+    description: g.description,
+    canonical: guidePath(g),
+    body: breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '指南', href: '/guides/' }, { label: g.h1 }]) + body,
+    active: 'guides',
+    jsonLd: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'Article', headline: g.h1, description: g.description, inLanguage: 'zh-HK', mainEntityOfPage: pageUrl(guidePath(g)) },
+        { '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: '首頁', item: pageUrl('/') },
+          { '@type': 'ListItem', position: 2, name: '指南', item: pageUrl('/guides/') },
+          { '@type': 'ListItem', position: 3, name: g.h1, item: pageUrl(guidePath(g)) }
+        ] }
+      ]
+    })
+  });
+}
+
+function guidesIndex() {
+  const rows = guides.map(g => `<a class="use-card" href="${guidePath(g)}">
+    <span class="entity-kicker">${esc(g.kicker)}</span>
+    <strong>${esc(g.h1)}</strong>
+    <p>${esc(g.description.slice(0, 70))}…</p>
+    <span class="use-count">閱讀 ↗</span>
+  </a>`).join('');
+  const body = `<section class="page-intro">
+  <p class="entity-kicker">GUIDES</p>
+  <h1>工商物業指南</h1>
+  <p>唔講行話，直接講簽約前要核實咩、邊啲數字要小心、邊啲條件會影響你實際成本。</p>
+</section>
+<section class="entity-block"><div class="use-grid">${rows}</div></section>`;
+  return layout({
+    title: '香港工商物業指南｜租工廈注意事項及用途限制｜QueenieHub',
+    description: '香港工商物業實用指南：租工廈前要核實的 12 件事、工廈用途限制、呎租呎價比較方法，全部附實際做法。',
+    canonical: '/guides/',
+    body: breadcrumbHtml([{ label: '首頁', href: '/' }, { label: '指南' }]) + body,
+    active: 'guides'
+  });
+}
+
+
+/* ---------- client data (static JSON for in-browser tools) ---------- */
+function freshLabel(p) {
+  if (!p.publishDate) return { label: '日期待核', tone: 'warn' };
+  const now = new Date(`${dataDate}T00:00:00Z`);
+  const pub = new Date(p.publishDate);
+  const days = Math.max(0, Math.round((now - pub) / 86400000));
+  if (days <= 7) return { label: days <= 1 ? '今日新盤' : `${days} 日內新盤`, tone: 'new' };
+  if (days <= 30) return { label: `刊登約 ${days} 日`, tone: 'ok' };
+  if (days <= 90) return { label: `刊登約 ${Math.round(days / 30)} 個月`, tone: 'old' };
+  return { label: '刊登較久，請核實', tone: 'old' };
+}
+function freshBadge(p) {
+  const f = freshLabel(p);
+  return `<span class="fresh fresh-${f.tone}">${esc(f.label)}</span>`;
+}
+function clientDataFiles() {
+  const props = rawData.map(p => ({
+    id: p.id, i: p.propertyNo, n: p.name, d: p.district, u: p.usage, c: p.category, cl: categoryLabel(p),
+    s: p.size || '', sv: p.sizeValue || 0, pr: p.price || '', r: p.rent || '', up: p.unitPrice || '',
+    t: p.tags || [], ad: p.address || '', f: p.floor || '',
+    b: p._building ? p._building.slug : '', bn: p._building ? p._building.name : '',
+    ln: listingPath(p), fr: freshLabel(p).label, pd: p.publishDate || ''
+  }));
+  const blds = buildings.map(b => {
+    const sizes = b.properties.map(p => p.sizeValue || 0).filter(Boolean);
+    const rents = b.rents.map(p => num(p.rent)).filter(Boolean);
+    const sales = b.sales.map(p => num(p.price)).filter(Boolean);
+    const rateOf = p => {
+      if (p.category === 'rent') {
+        const r = num(p.rent), sz = p.sizeValue || 0;
+        return r && sz ? r / sz : 0;
+      }
+      const up = num(p.unitPrice);
+      if (up) return up;
+      const pr = num(p.price), sz = p.sizeValue || 0;
+      return pr && sz ? (pr * 10000) / sz : 0;
+    };
+    const rentRates = b.rents.map(rateOf).filter(x => x > 0).sort((x, y) => x - y);
+    const saleRates = b.sales.map(rateOf).filter(x => x > 0).sort((x, y) => x - y);
+    return {
+      s: b.slug, n: b.name, e: b.nameEn || '', d: b.district, a: b.address || '',
+      us: b.usages.filter(Boolean), sale: b.sales.length, rent: b.rents.length,
+      smin: sizes.length ? Math.min(...sizes) : 0, smax: sizes.length ? Math.max(...sizes) : 0,
+      rmin: rents.length ? Math.min(...rents) : 0, rmax: rents.length ? Math.max(...rents) : 0,
+      pmin: sales.length ? Math.min(...sales) : 0, pmax: sales.length ? Math.max(...sales) : 0,
+      rr: rentRates.length ? Math.round(rentRates[Math.floor(rentRates.length / 2)]) : 0,
+      pr: saleRates.length ? Math.round(saleRates[Math.floor(saleRates.length / 2)]) : 0,
+      m: districtStations[b.district] ? districtStations[b.district][0] : ''
+    };
+  });
+  return { props, blds };
+}
+
 write(path.join(dist,'styles.css'), fs.readFileSync(path.join(root,'styles.css'),'utf8'));
 write(path.join(dist,'app.js'), fs.readFileSync(path.join(root,'app.js'),'utf8'));
 const publicDir = path.join(root, 'public');
@@ -1035,6 +1807,17 @@ for (const p of rawData) {
 }
 for (const [d, dSlug] of Object.entries(districtSlug)) write(path.join(dist,`district/${dSlug}/index.html`), aggregatePage('district', d, rawData.filter(p=>p.district===d)));
 for (const [u, uSlug] of Object.entries(usageSlug)) write(path.join(dist,`usage/${uSlug}/index.html`), aggregatePage('usage', u, rawData.filter(p=>p.usage===u)));
+write(path.join(dist,'match/index.html'), matchPage());
+write(path.join(dist,'budget/index.html'), budgetPage());
+write(path.join(dist,'compare/index.html'), comparePage());
+write(path.join(dist,'brief/index.html'), briefPage());
+write(path.join(dist,'use/index.html'), useCaseIndex());
+for (const c of useCases) write(path.join(dist, `use/${c.slug}/index.html`), useCasePage(c));
+write(path.join(dist,'guides/index.html'), guidesIndex());
+for (const g of guides) write(path.join(dist, `guides/${g.slug}/index.html`), guidePage(g));
+const clientData = clientDataFiles();
+write(path.join(dist,'data/properties.json'), JSON.stringify(clientData.props));
+write(path.join(dist,'data/buildings.json'), JSON.stringify(clientData.blds));
 write(path.join(dist,'404.html'), notFoundPage());
 
 const allPages = [
@@ -1044,6 +1827,14 @@ const allPages = [
   ...Object.values(districtSlug).map(s => ({ path: `/district/${s}/`, title: '地區大廈及盤源' })),
   { path: '/listings/', title: '全部公開盤源' },
   { path: '/market/', title: '呎租及呎價參考' },
+  { path: '/match/', title: '工商物業配對器' },
+  { path: '/budget/', title: '租金預算計算器' },
+  { path: '/compare/', title: '大廈比較工具' },
+  { path: '/brief/', title: '物業查詢 Brief' },
+  { path: '/use/', title: '按用途搵盤' },
+  ...useCases.map(c => ({ path: useCasePath(c), title: c.h1 })),
+  { path: '/guides/', title: '工商物業指南' },
+  ...guides.map(g => ({ path: guidePath(g), title: g.h1 })),
   ...intents.map(i => ({ path: `/${i.slug}/`, title: i.h1 })),
   { path: '/about/', title: '關於 QueenieHub' },
   { path: '/methodology/', title: '資料方法' },

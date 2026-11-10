@@ -1,0 +1,73 @@
+<!doctype html><html lang="zh-HK"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工商物業租金預算計算器｜按金、佣金及起租支出｜QueenieHub</title><meta name="description" content="輸入面積及呎租，即時估算每月租金、每年租金、按金、代理佣金、管理費及起租前一次過支出，方便比較不同盤源。"><meta name="keywords" content="香港工商舖, 工廈放租, 寫字樓, 商業地產, QueenieHub"><link rel="canonical" href="/budget/">
+<meta property="og:type" content="website"><meta property="og:title" content="工商物業租金預算計算器｜按金、佣金及起租支出｜QueenieHub"><meta property="og:description" content="輸入面積及呎租，即時估算每月租金、每年租金、按金、代理佣金、管理費及起租前一次過支出，方便比較不同盤源。"><meta property="og:url" content="/budget/"><meta property="og:site_name" content="Queenie 商業地產搜尋"><meta property="og:image" content="https://queeniehub.estate/og-cover.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="zh_HK">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="工商物業租金預算計算器｜按金、佣金及起租支出｜QueenieHub"><meta name="twitter:description" content="輸入面積及呎租，即時估算每月租金、每年租金、按金、代理佣金、管理費及起租前一次過支出，方便比較不同盤源。"><meta name="twitter:image" content="https://queeniehub.estate/og-cover.png">
+<link rel="stylesheet" href="/styles.css"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://queeniehub.estate/budget/#page","url":"https://queeniehub.estate/budget/","name":"租金預算計算器","description":"估算香港工商物業租金、按金及佣金支出。","inLanguage":"zh-HK","isPartOf":{"@id":"https://queeniehub.estate/#website"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"首頁","item":"https://queeniehub.estate/"},{"@type":"ListItem","position":2,"name":"租金預算計算器","item":"https://queeniehub.estate/budget/"}]}]}</script></head><body>
+<a class="skip-link" href="#main">跳至主要內容</a>
+<header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="active" href="/match/">配對</a><a class="" href="/buildings/">大廈</a><a class="" href="/listings/">盤源</a><a href="/compare/">比較</a><a class="" href="/guides/">指南</a><a class="nav-cta" href="https://wa.me/85266552539">WhatsApp 查詢</a></nav></header>
+<main id="main"><nav class="breadcrumb" aria-label="麵包屑"><a href="/">首頁</a><span>/</span><span aria-current="page">租金預算計算器</span></nav>
+<section class="tool-hero">
+  <p class="entity-kicker">RENT BUDGET</p>
+  <h1>租金預算計算器</h1>
+  <p class="tool-lede">輸入面積同呎租，即刻睇每月租金、每年租金、按金、佣金同起租前要準備幾多錢。</p>
+</section>
+<section class="tool-wrap">
+  <div class="tool-grid">
+    <form id="budgetForm" class="tool-card">
+      <h2>輸入租務條件</h2>
+      <div class="field-grid">
+        <label class="input-field">面積（平方呎）
+          <input type="number" name="area" min="1" step="10" value="1200" required>
+        </label>
+        <label class="input-field">呎租（HKD／呎）
+          <input type="number" name="rate" min="0" step="0.5" value="16" required>
+        </label>
+        <label class="input-field">按金（月租倍數）
+          <input type="number" name="deposit" min="0" max="12" step="1" value="3">
+        </label>
+        <label class="input-field">免租期（日）
+          <input type="number" name="fitout" min="0" max="180" step="1" value="14">
+        </label>
+        <label class="input-field">代理佣金（月租倍數）
+          <input type="number" name="commission" min="0" max="2" step="0.5" value="0.5">
+        </label>
+        <label class="input-field">管理費（HKD／呎）
+          <input type="number" name="mgmt" min="0" step="0.1" value="2.5">
+        </label>
+      </div>
+      <p class="tool-note">以上只作估算。實際按金、免租期、佣金及管理費由業主及代理合約決定。</p>
+    </form>
+
+    <section class="tool-card calc-card" aria-live="polite">
+      <h2>每月及起租支出</h2>
+      <dl class="calc-out">
+        <div><dt>每月租金</dt><dd id="outRent">—</dd></div>
+        <div><dt>每年租金</dt><dd id="outYear">—</dd></div>
+        <div><dt>每月管理費</dt><dd id="outMgmt">—</dd></div>
+        <div><dt>每月總支出</dt><dd id="outMonthly" class="strong">—</dd></div>
+        <div><dt>按金</dt><dd id="outDeposit">—</dd></div>
+        <div><dt>代理佣金</dt><dd id="outCommission">—</dd></div>
+        <div><dt>起租前一次過支出</dt><dd id="outUpfront" class="strong">—</dd></div>
+      </dl>
+      <p class="tool-note">未包括裝修、搬遷、差餉地租、水電按金、保險及印花稅（如有）。</p>
+      <a id="budgetWa" class="primary-button" href="https://wa.me/85266552539" rel="noopener">用呢個預算搵盤 <span>↗</span></a>
+    </section>
+  </div>
+
+  <section class="tool-card tool-explain">
+    <h2>租工商物業，通常有邊幾筆錢</h2>
+    <ul class="plain-list">
+      <li><strong>租金</strong>：多數以建築面積計，實際可用面積可能較細，簽約前要問清楚係建築定實用。</li>
+      <li><strong>按金</strong>：市場常見兩至三個月租，視物業類型及業主取態。</li>
+      <li><strong>免租期</strong>：用嚟裝修、搬遷，通常一至四星期，要寫入租約。</li>
+      <li><strong>代理佣金</strong>：租務常見半個月租至一個月租，由業主、租客或雙方分擔，簽約前要確認。</li>
+      <li><strong>管理費</strong>：部分租金已包，部分另計，工廈差異可以好大。</li>
+      <li><strong>其他</strong>：差餉、地租、水電按金、裝修及消防工程，通常另計。</li>
+    </ul>
+    <p>如果你輸入嘅呎租明顯低於同區水平，通常代表面積計算方式、樓層、裝修或大廈條件有差異，唔一定係「抵」。可以先用 <a class="inline-link" href="/market/">呎租參考頁</a> 比較同區中位數。</p>
+  </section>
+</section></main>
+<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="https://oir.centanet.com/agent-detail/queenie-yeung/49008/" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/match/">配對器</a><a href="/budget/">預算計算器</a><a href="/compare/">大廈比較</a><a href="/brief/">查詢 Brief</a><a href="/use/">按用途搵盤</a><a href="/guides/">指南</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><a href="/kwun-tong-industrial-for-rent/">觀塘工廈放租</a><a href="/kwun-tong-office-for-rent/">觀塘寫字樓放租</a><a href="/kowloon-bay-office/">九龍灣寫字樓</a><a href="/cheung-sha-wan-industrial-for-sale/">長沙灣工廈出售</a><a href="/tuen-mun-industrial-for-rent/">屯門工廈放租</a><a href="/wong-chuk-hang-commercial/">黃竹坑商業地產</a><span>資料更新：2026-11-08 抓取</span></div></footer>
+<div class="compare-bar" id="compareBar" hidden><div class="compare-info"><strong id="compareCount">0</strong><span>個盤源已選</span><div class="compare-list" id="compareList"></div></div><div class="compare-actions"><a class="primary-button" id="compareSend" href="#" target="_blank" rel="noopener">WhatsApp 一次查詢</a><button class="ghost-button" type="button" id="compareClear">清除</button></div></div>
+<script src="/app.js" defer></script></body></html>
