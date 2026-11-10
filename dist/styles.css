@@ -363,3 +363,9 @@ body{padding-bottom:0}
 
 .compare-option.is-empty .compare-option-name{color:var(--muted)}
 .compare-option.is-empty .compare-option-meta{font-style:italic}
+
+/* footer link columns (long link list) */
+@media (min-width:721px){
+  .footer-links{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:8px 26px;text-align:left;align-content:start}
+  .footer-links span{grid-column:1/-1;margin-top:6px;color:#7f9089}
+}
