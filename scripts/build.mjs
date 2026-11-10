@@ -84,6 +84,7 @@ const usageMeta = {
 };
 const districtSlug = { '觀塘':'kwun-tong', '長沙灣':'cheung-sha-wan', '屯門':'tuen-mun', '九龍灣':'kowloon-bay', '黃竹坑':'wong-chuk-hang', '油塘':'yau-tong', '新蒲崗':'san-po-kong', '葵涌':'kwai-chung', '大角咀':'tai-kok-tsui', '太子':'prince-edward', '荃灣':'tsuen-wan', '西區':'western-district', '南區':'southern-district', '佐敦':'jordan', '粉嶺':'fan-ling', '尖沙咀':'tsim-sha-tsui', '銅鑼灣':'causeway-bay', '石門':'shek-mun', '中環':'central', '灣仔':'wan-chai' };
 const usageSlug = { '工商':'industrial', '寫字樓':'office', '工業':'factory', '寫字樓及商舖':'office-shop', '商舖':'shop' };
+const districtStations = { '觀塘':['觀塘站','牛頭角站'], '九龍灣':['九龍灣站','啟德站'], '長沙灣':['荔枝角站','長沙灣站'], '屯門':['屯門站','兆康站'], '黃竹坑':['黃竹坑站'], '油塘':['油塘站'], '新蒲崗':['鑽石山站'], '葵涌':['葵興站','葵芳站'], '荃灣':['荃灣站','荃灣西站'], '大角咀':['奧運站'], '太子':['太子站'], '佐敦':['佐敦站'], '粉嶺':['粉嶺站'], '尖沙咀':['尖沙咀站'], '銅鑼灣':['銅鑼灣站'], '中環':['中環站'], '灣仔':['灣仔站'], '石門':['石門站'] };
 const esc = (v='') => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const slug = (v='') => String(v).toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'-').replace(/^-|-$/g,'');
 const mkdir = p => fs.mkdirSync(p, { recursive: true });
@@ -332,7 +333,7 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
 <a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/district/kwun-tong/">地區</a><a href="/usage/industrial/">用途</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>
-<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><span>資料更新：${dataDate} 抓取</span></div></footer>
+<footer class="site-footer"><div><span class="brand-footer">Q / COMMERCIAL INDEX</span><p>香港工商舖公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。資料來自公開來源，價格、盤況及面積請於聯絡前重新核對。</p></div><div class="footer-links"><a href="${agentPage}" rel="nofollow">原始代理公開頁</a><a href="/buildings/">全部大廈</a><a href="/listings/">全部盤源</a><a href="/market/">呎租參考</a><a href="/about/">關於 QueenieHub</a><a href="/methodology/">資料方法</a><a href="/contact/">聯絡</a><a href="/kwun-tong-industrial-for-rent/">觀塘工廈放租</a><a href="/kwun-tong-office-for-rent/">觀塘寫字樓放租</a><a href="/kowloon-bay-office/">九龍灣寫字樓</a><a href="/cheung-sha-wan-industrial-for-sale/">長沙灣工廈出售</a><a href="/tuen-mun-industrial-for-rent/">屯門工廈放租</a><a href="/wong-chuk-hang-commercial/">黃竹坑商業地產</a><span>資料更新：${dataDate} 抓取</span></div></footer>
 <div class="compare-bar" id="compareBar" hidden><div class="compare-info"><strong id="compareCount">0</strong><span>個盤源已選</span><div class="compare-list" id="compareList"></div></div><div class="compare-actions"><a class="primary-button" id="compareSend" href="#" target="_blank" rel="noopener">WhatsApp 一次查詢</a><button class="ghost-button" type="button" id="compareClear">清除</button></div></div>
 <script src="/app.js" defer></script></body></html>`;
 }
@@ -486,6 +487,13 @@ function buildingPage(b) {
     ${bf ? `<h2 class="entity-subhead">位置、落成年份及大廈規格</h2><p class="entity-lede">${esc(factSentence(b, bf))}</p>` : ''}
     <h2 class="entity-subhead">大廈資料</h2>
     <div class="facts">${factList.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div>
+    <div class="entity-block">
+      <h2>${esc(b.name)}位置及交通</h2>
+      <p>地址：${esc(b.district)}${b.address ? `，${esc(b.address)}` : ''}${b.zone ? `（${esc(b.zone)}）` : ''}。${bf && bf.mtr ? `最近港鐵：${esc(bf.mtr)}（公開資料）。` : (districtStations[b.district] ? `本區主要港鐵站：${districtStations[b.district].map(esc).join('、')}，實際步行時間視乎大廈位置及出入口。` : '')}</p>
+      <p>公開資料顯示用途為 ${b.usages.length ? esc(b.usages.join('、')) : '未列明'}。實際可否作辦公室、工作室、零售或特定行業使用，要視乎地契、大廈公契、屋宇署批准用途及消防要求，租或買之前應該逐項確認。</p>
+      <div class="hero-actions"><a class="secondary-button dark" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([b.name, b.address, b.district, 'Hong Kong'].filter(Boolean).join(' '))}" target="_blank" rel="noopener nofollow">Google 地圖路線 ↗</a>${(intents.find(i=>i.district===b.district)) ? `<a class="secondary-button dark" href="/${intents.find(i=>i.district===b.district).slug}/">${esc(intents.find(i=>i.district===b.district).h1)} ↗</a>` : ''}</div>
+      <p class="table-note">地址及港鐵資料整理自公開來源；步行時間只作參考，實際路線請用 Google 地圖確認。</p>
+    </div>
     ${unitTable(b)}
     <div class="entity-block">
       <h2>睇樓或落訂前，建議逐項核對</h2>
@@ -861,20 +869,24 @@ function home() {
     const pCount = rawData.filter(p=>p.district===d).length;
     return `<a class="district-card" href="/district/${districtSlug[d]}/"><span>${esc(d)}</span><strong>${bCount}</strong><small>幢大廈 · ${pCount} 個盤源 ↗</small></a>`;
   }).join('');
-  const body = `<section class="hero"><div class="hero-copy"><span class="eyebrow inverse">QUEENIE / COMMERCIAL INDEX</span><h1>由大廈開始，<br>搵到啱你<em>做生意</em>嘅地方。</h1><p>先睇大廈嘅地址、用途、面積同價格範圍，再睇呢幢大廈現有嘅出售同放租盤源。唔使逐個 listing 猜。</p><a class="hero-cta" href="/buildings/">睇全部大廈 <span>↗</span></a></div><div class="hero-aside"><div class="orbit"><span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span><span class="orbit-dot dot-c"></span><div><b>${buildings.length}</b><small>BUILDINGS<br>INDEXED</small></div></div><p>公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。</p></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START WITH BUILDINGS</span><h2>先揀一幢大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${featuredBuildings.map(buildingCard).join('')}</div></section><section class="district-section"><div class="section-heading"><div><span class="section-label">BROWSE BY AREA</span><h2>按地區搵大廈</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="district-grid">${districtCards}</div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">FRESH LISTINGS</span><h2>最新公開盤源</h2></div><a href="/listings/">開啟完整篩選 ↗</a></div><div class="listing-grid">${featuredListings.map(card).join('')}</div></section><section class="trust-strip"><div><span class="section-label">HOW IT WORKS</span><h2>由大廈資料到聯絡，唔使兜路。</h2></div><div class="steps"><span><b>01</b>揀大廈睇概況</span><span><b>02</b>比較面積同價格</span><span><b>03</b>WhatsApp 核對盤況</span></div></section>`;
+  const body = `<section class="hero"><div class="hero-copy"><span class="eyebrow inverse">QUEENIE / COMMERCIAL INDEX</span><h1>由大廈開始，<br>搵到啱你<em>做生意</em>嘅地方。</h1><p>先睇大廈嘅地址、用途、面積同價格範圍，再睇呢幢大廈現有嘅出售同放租盤源。唔使逐個 listing 猜。</p><a class="hero-cta" href="/buildings/">睇全部大廈 <span>↗</span></a></div><div class="hero-aside"><div class="orbit"><span class="orbit-dot dot-a"></span><span class="orbit-dot dot-b"></span><span class="orbit-dot dot-c"></span><div><b>${buildings.length}</b><small>BUILDINGS<br>INDEXED</small></div></div><p>公開資料整理及查詢入口，並非任何大廈業主或管理處官方網站。</p></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START WITH BUILDINGS</span><h2>先揀一幢大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${featuredBuildings.map(buildingCard).join('')}</div></section><section class="intent-section"><div class="section-heading"><div><span class="section-label">POPULAR SEARCHES</span><h2>最多人搵嘅組合</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="intent-strip">${intents.map(i => `<a class="intent-chip" href="/${i.slug}/"><strong>${esc(i.h1)}</strong><span>${esc(i.district)} · 面積及呎租參考 ↗</span></a>`).join('')}</div></section><section class="district-section"><div class="section-heading"><div><span class="section-label">BROWSE BY AREA</span><h2>按地區搵大廈</h2></div><a href="/listings/">全部盤源 ↗</a></div><div class="district-grid">${districtCards}</div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">FRESH LISTINGS</span><h2>最新公開盤源</h2></div><a href="/listings/">開啟完整篩選 ↗</a></div><div class="listing-grid">${featuredListings.map(card).join('')}</div></section><section class="trust-strip"><div><span class="section-label">HOW IT WORKS</span><h2>由大廈資料到聯絡，唔使兜路。</h2></div><div class="steps"><span><b>01</b>揀大廈睇概況</span><span><b>02</b>比較面積同價格</span><span><b>03</b>WhatsApp 核對盤況</span></div></section>`;
   return layout({title:'香港工商大廈及盤源索引｜觀塘工廈、寫字樓、商舖｜QueenieHub',description:'由大廈開始搵香港工商物業：大廈地址、用途、面積及價格範圍，附現有出售及放租公開盤源。資料更新 2026-11-08。',canonical:pageUrl('/'),body,keywords:'香港工商大廈, 香港工廈, 觀塘工廈, 寫字樓放租, 工商舖'});
 }
 function aggregatePage(type, value, list) {
   const isDistrict = type === 'district';
   const dSlug = districtSlug[value] || slug(value);
   const bList = isDistrict ? buildings.filter(b => b.district === value) : [];
+  const relatedIntents = isDistrict ? intents.filter(i => i.district === value) : [];
+  const intentBlock = relatedIntents.length
+    ? `<section class="entity-block"><h2>${esc(value)}熱門搜尋</h2><ul class="source-list">${relatedIntents.map(i => `<li><a href="/${i.slug}/">${esc(i.title.replace('｜QueenieHub', ''))}</a></li>`).join('')}</ul></section>`
+    : '';
   const title = isDistrict
     ? `${value}工廈及寫字樓大廈索引及盤源｜${bList.length} 幢大廈｜QueenieHub`
     : `${value}出售及放租公開盤源｜${list.length} 個工商物業項目｜QueenieHub`;
   const description = isDistrict
     ? `${value}工商物業大廈索引：${bList.length} 幢大廈嘅地址、用途、面積範圍及價格概況，並列出 ${list.length} 個公開出售及放租盤源。`
     : `${value}公開盤源共 ${list.length} 個項目，按面積、價格及出售或放租瀏覽，每項附所屬大廈地址、面積範圍及 WhatsApp 查詢方法。`;
-  const body = `${breadcrumbHtml([{ label: '首頁', href: '/' }, { label: isDistrict ? value : `${value}盤源` }])}<section class="page-intro"><span class="section-label">${isDistrict?'AREA INDEX':'USAGE INDEX'}</span><h1>${esc(value)}<br><em>${isDistrict?'大廈及盤源':'盤源分類'}</em></h1><p>${esc(description)}</p><a class="primary-button" href="/listings/">查看全部盤源</a></section>${isDistrict && bList.length ? `<section class="featured-section"><div class="section-heading"><div><span class="section-label">BUILDINGS</span><h2>${esc(value)}大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${bList.map(buildingCard).join('')}</div></section>` : ''}<section class="results-head"><strong>${list.length} 個公開項目</strong><span>資料需重新核對</span></section><section class="listing-grid">${list.map(card).join('')}</section><section class="notice"><strong>資料提醒</strong><p>呢度係公開資料整理入口，唔係實時庫存保證，亦非任何大廈業主或管理處官方網站。價格、面積、盤況及可用日期請直接向代理核對。</p></section>`;
+  const body = `${breadcrumbHtml([{ label: '首頁', href: '/' }, { label: isDistrict ? value : `${value}盤源` }])}<section class="page-intro"><span class="section-label">${isDistrict?'AREA INDEX':'USAGE INDEX'}</span><h1>${esc(value)}<br><em>${isDistrict?'大廈及盤源':'盤源分類'}</em></h1><p>${esc(description)}</p><a class="primary-button" href="/listings/">查看全部盤源</a></section>${isDistrict && bList.length ? `<section class="featured-section"><div class="section-heading"><div><span class="section-label">BUILDINGS</span><h2>${esc(value)}大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${bList.map(buildingCard).join('')}</div></section>` : ''}<section class="results-head"><strong>${list.length} 個公開項目</strong><span>資料需重新核對</span></section><section class="listing-grid">${list.map(card).join('')}</section>${intentBlock}<section class="notice"><strong>資料提醒</strong><p>呢度係公開資料整理入口，唔係實時庫存保證，亦非任何大廈業主或管理處官方網站。價格、面積、盤況及可用日期請直接向代理核對。</p></section>`;
   const pathName = isDistrict ? `/district/${dSlug}` : `/usage/${usageSlug[value] || slug(value)}`;
   return layout({title,description,canonical:pageUrl(pathName),body});
 }
@@ -901,6 +913,92 @@ function contactPage() {
   return layout({title:'聯絡 Queenie｜香港工廈、寫字樓及商業盤源查詢入口網站',description:'聯絡 Queenie 查詢觀塘、九龍灣、長沙灣等香港工商大廈、工廈、寫字樓及商業物業公開盤源。',canonical:pageUrl('/contact'),body,keywords:'聯絡Queenie,香港工廈查詢,觀塘寫字樓,商業物業放租'});
 }
 
+
+/* ---------- high-intent landing pages ---------- */
+const intents = JSON.parse(fs.readFileSync(path.join(root, 'data/intent-pages.json'), 'utf8'));
+function rateNum(p) {
+  if (p.category === 'rent') {
+    const r = num(p.rent), s = Number(p.sizeValue) || 0;
+    return r && s ? r / s : 0;
+  }
+  return num(p.unitPrice) || 0;
+}
+function intentListings(cfg) {
+  return rawData.filter(p => p.district === cfg.district && cfg.usages.includes(p.usage) && (cfg.category === 'any' || p.category === cfg.category));
+}
+function intentStats(list) {
+  const rates = list.map(rateNum).filter(n => n > 0).sort((a, b) => a - b);
+  const sizes = list.map(p => Number(p.sizeValue) || 0).filter(n => n > 0).sort((a, b) => a - b);
+  if (!rates.length) return null;
+  return { n: rates.length, median: median(rates), min: rates[0], max: rates[rates.length - 1], sizeMin: sizes[0] || 0, sizeMax: sizes[sizes.length - 1] || 0 };
+}
+function intentAnswer(cfg) {
+  const list = intentListings(cfg);
+  const rents = intentStats(list.filter(p => p.category === 'rent'));
+  const sales = intentStats(list.filter(p => p.category !== 'rent'));
+  const rng = st => {
+    const f = v => `$${Math.round(v).toLocaleString('en-HK')}`;
+    return st.min === st.max ? `@${f(st.min)}／呎` : `@${f(st.min)}–${f(st.max)}／呎`;
+  };
+  const bits = [];
+  if (list.length) bits.push(`目前整理到 ${list.length} 個相關公開盤源`);
+  if (rents) bits.push(`放租叫價約 ${rng(rents)}，中位 ${`$${Math.round(rents.median).toLocaleString('en-HK')}`}／呎（樣本 ${rents.n}）`);
+  if (sales) bits.push(`出售叫價約 ${rng(sales)}，中位 ${`$${Math.round(sales.median).toLocaleString('en-HK')}`}／呎（樣本 ${sales.n}）`);
+  const areaSrc = rents || sales;
+  if (areaSrc && areaSrc.sizeMin) bits.push(`公開面積約 ${areaSrc.sizeMin.toLocaleString('en-HK')}–${areaSrc.sizeMax.toLocaleString('en-HK')} 呎`);
+  const smallSample = (rents && rents.n < 3) || (sales && sales.n < 3);
+  return bits.length
+    ? `${bits.join('；')}。${smallSample ? '部分組合樣本太少，只宜視為個別叫價，唔應當成市場定價。' : ''}以上係 ${dataDate} 整理嘅公開廣告叫價，未經成交核實，實際價錢及盤況請向代理確認。`
+    : `目前未夠公開盤源去計算叫價範圍，可以直接查詢最新供應同可睇時間。`;
+}
+function intentTable(cfg) {
+  const groups = [
+    { label: '放租單位', list: intentListings(cfg).filter(p => p.category === 'rent'), unit: '呎租' },
+    { label: '出售單位', list: intentListings(cfg).filter(p => p.category !== 'rent'), unit: '呎價' }
+  ].filter(g => g.list.length);
+  if (!groups.length) return '';
+  const rows = groups.map(g => {
+    const st = intentStats(g.list);
+    if (!st) return '';
+    const fmt = v => `$${Math.round(v).toLocaleString('en-HK')}`;
+    const range = st.min === st.max ? `${fmt(st.min)}／呎` : `${fmt(st.min)}–${fmt(st.max)}／呎`;
+    const area = st.sizeMin ? (st.sizeMin === st.sizeMax ? `${st.sizeMin.toLocaleString('en-HK')} 呎` : `${st.sizeMin.toLocaleString('en-HK')}–${st.sizeMax.toLocaleString('en-HK')} 呎`) : '—';
+    return `<tr><td>${g.label}</td><td>${st.n}${st.n < 3 ? '（樣本少）' : ''}</td><td>${fmt(st.median)}／呎</td><td>${range}</td><td>${area}</td></tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table class="unit-table"><thead><tr><th>類型</th><th>樣本</th><th>中位${cfg.category === 'sale' ? '呎價' : '呎租'}（叫價）</th><th>叫價範圍</th><th>公開面積</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function intentPage(cfg) {
+  const list = intentListings(cfg);
+  const relatedBuildings = buildings.filter(b => b.district === cfg.district).sort((a, b) => b.properties.length - a.properties.length).slice(0, 8);
+  const faqJson = {
+    '@type': 'FAQPage',
+    mainEntity: cfg.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } }))
+  };
+  const crumbs = [{ label: '首頁', href: '/' }, { label: `${cfg.district}`, href: `/district/${districtSlug[cfg.district]}/` }, { label: cfg.h1 }];
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      { '@type': 'WebPage', '@id': `${pageUrl(`/${cfg.slug}`)}#webpage`, url: pageUrl(`/${cfg.slug}`), name: cfg.title, description: cfg.desc, isPartOf: siteRef(), about: { '@type': 'Place', name: `${cfg.district}`, address: { '@type': 'PostalAddress', addressLocality: 'Hong Kong', addressRegion: cfg.district } } },
+      breadcrumbJson(crumbs),
+      faqJson,
+      { '@type': 'ItemList', name: `${cfg.h1}公開盤源`, numberOfItems: list.length, itemListElement: list.slice(0, 30).map((p, i) => ({ '@type': 'ListItem', position: i + 1, name: `${p.name} ${p.size || ''} ${categoryLabel(p)}`.trim(), url: pageUrl(listingPath(p)) })) }
+    ]
+  });
+  const ctaText = `你好，我想搵${cfg.district}${cfg.category === 'sale' ? '出售' : cfg.category === 'rent' ? '放租' : ''}物業，用途係${cfg.usages[0]}，預算同面積大約係：`;
+  const body = `${breadcrumbHtml(crumbs)}
+<section class="intent-hero"><span class="section-label">${esc(cfg.district)} / ${cfg.category === 'sale' ? '出售' : cfg.category === 'rent' ? '放租' : '租售'}</span><h1>${esc(cfg.h1)}</h1><p class="intent-answer">${esc(intentAnswer(cfg))}</p><div class="hero-actions"><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent(ctaText)}" target="_blank" rel="noopener">WhatsApp 講需求 ↗</a><a class="secondary-button dark" href="/listings/">睇全部盤源</a></div></section>
+<section class="entity-block"><p class="entity-lede">${esc(cfg.lede)}</p></section>
+<section class="entity-block"><h2>${esc(cfg.district)}${esc(cfg.h1.replace(cfg.district, ''))}：叫價同面積參考</h2>${intentTable(cfg) || '<p>目前未夠公開盤源計算叫價範圍。</p>'}<p class="table-note">${esc(cfg.rentNote)}</p></section>
+<section class="entity-block"><h2>呢類單位適合邊類公司</h2><ul class="fit-list">${cfg.fitFor.map(f => `<li><strong>${esc(f.who)}</strong><span>${esc(f.why)}</span></li>`).join('')}</ul></section>
+<section class="entity-block"><h2>交通及位置</h2><ul class="source-list">${cfg.transport.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p class="table-note">步行時間只作參考，實際路線及出入口請用 Google 地圖確認。</p></section>
+${relatedBuildings.length ? `<section class="featured-section"><div class="section-heading"><div><span class="section-label">BUILDINGS</span><h2>${esc(cfg.district)}主要大廈</h2></div><a href="/district/${districtSlug[cfg.district]}/">全區大廈 ↗</a></div><div class="building-grid">${relatedBuildings.map(buildingCard).join('')}</div></section>` : ''}
+<section class="featured-section"><div class="section-heading"><div><span class="section-label">LISTINGS</span><h2>目前公開盤源</h2></div><span class="count-note">${list.length} 個項目</span></div>${list.length ? `<div class="listing-grid">${list.map(card).join('')}</div>` : `<div class="notice"><strong>暫時未有公開盤源</strong><p>呢個組合目前未見公開廣告，可以直接 WhatsApp 講需求，我會幫你對返現有及未上網嘅盤源。</p></div>`}</section>
+<section class="entity-block"><h2>${esc(cfg.h1)}常見問題</h2><div class="faq">${cfg.faq.map(f => `<div class="faq-item"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join('')}</div></section>
+<section class="aside-card accent intent-cta"><span class="eyebrow">下一步</span><h2>講地區、面積同預算，我幫你對盤。</h2><p>唔需要自己逐個盤估價。講清楚用途、需要幾大、幾時起租或成交，我會按公開盤源同你核對。</p><a class="primary-button" href="${whatsappBase}?text=${encodeURIComponent(ctaText)}" target="_blank" rel="noopener">WhatsApp 查詢</a></section>
+<section class="entity-block"><h2>相關頁面</h2><ul class="source-list">${intents.filter(i => i.slug !== cfg.slug).map(i => `<li><a href="/${i.slug}/">${esc(i.title.replace('｜QueenieHub', ''))}</a></li>`).join('')}<li><a href="/market/">全港呎租及呎價參考</a></li><li><a href="/methodology/">資料方法及限制</a></li></ul></section>`;
+  return layout({ title: cfg.title, description: cfg.desc, canonical: pageUrl(`/${cfg.slug}`), body, keywords: cfg.keywords, jsonLd });
+}
+
 function notFoundPage() {
   const body = `<section class="page-intro"><span class="section-label">404 / NOT FOUND</span><h1>搵唔到呢一頁。</h1><p>個別盤源可能已經下架，或者網址打錯。你可以由大廈索引或全部盤源重新開始。</p><div class="hero-actions"><a class="primary-button" href="/buildings/">睇全部大廈</a><a class="secondary-button dark" href="/listings/">睇全部盤源</a></div></section><section class="featured-section"><div class="section-heading"><div><span class="section-label">START HERE</span><h2>熱門地區大廈</h2></div><a href="/buildings/">全部大廈 ↗</a></div><div class="building-grid">${buildings.slice(0, 6).map(buildingCard).join('')}</div></section>`;
   return layout({ title: '搵唔到呢一頁｜香港工商大廈索引及公開盤源｜QueenieHub', description: '此頁面不存在或盤源可能已下架。由香港工商大廈索引或全部公開盤源重新開始，按地區、用途、面積及價格搵合適工商物業。', canonical: pageUrl('/404.html'), body, keywords: '香港工商大廈, 工廈, 寫字樓, 盤源索引' });
@@ -922,6 +1020,7 @@ write(path.join(dist,'market/index.html'), marketPage());
 write(path.join(dist,'about/index.html'), aboutPage());
 write(path.join(dist,'methodology/index.html'), methodPage());
 write(path.join(dist,'contact/index.html'), contactPage());
+for (const cfg of intents) write(path.join(dist, cfg.slug, 'index.html'), intentPage(cfg));
 for (const b of buildings) write(path.join(dist,`building/${b.slug}/index.html`), buildingPage(b));
 for (const p of rawData) {
   const html = detail(p);
@@ -945,6 +1044,7 @@ const allPages = [
   ...Object.values(districtSlug).map(s => ({ path: `/district/${s}/`, title: '地區大廈及盤源' })),
   { path: '/listings/', title: '全部公開盤源' },
   { path: '/market/', title: '呎租及呎價參考' },
+  ...intents.map(i => ({ path: `/${i.slug}/`, title: i.h1 })),
   { path: '/about/', title: '關於 QueenieHub' },
   { path: '/methodology/', title: '資料方法' },
   { path: '/contact/', title: '聯絡 Queenie' },

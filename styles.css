@@ -143,3 +143,32 @@ body{padding-bottom:0}
 .faq-item h3::before{content:"Q";display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background:var(--acid);color:var(--ink);font-size:11px;font-weight:800;margin-right:8px;vertical-align:2px}
 .faq-item p{margin:0;font-size:14px;line-height:1.75;color:var(--ink-soft)}
 .h1-no{display:inline-block;margin-left:12px;padding:4px 10px;border-radius:999px;background:var(--acid);color:var(--ink);font-size:13px;font-weight:700;letter-spacing:.02em;vertical-align:middle}
+
+/* ---------- high-intent landing pages ---------- */
+.intent-hero{padding:clamp(28px,5vw,56px) 0 clamp(20px,3vw,32px);border-bottom:1px solid var(--line)}
+.intent-hero h1{font-size:clamp(2rem,4.6vw,3.4rem);line-height:1.15;margin:10px 0 14px}
+.intent-answer{max-width:52ch;font-size:1.02rem;line-height:1.85;color:var(--ink)}
+.intent-hero .hero-actions{margin-top:22px}
+.fit-list{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+.fit-list li{display:grid;gap:4px;padding:14px 0;border-top:1px solid var(--line)}
+.fit-list li:first-child{border-top:0}
+.fit-list strong{font-size:1rem}
+.fit-list span{color:var(--muted);line-height:1.8;font-size:.95rem}
+.intent-section{padding:clamp(26px,4vw,46px) 0}
+.intent-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.intent-chip{display:grid;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink);background:var(--paper)}
+.intent-chip strong{font-size:1rem}
+.intent-chip span{font-size:.82rem;color:var(--muted)}
+.intent-chip:hover{border-color:var(--accent);transform:translateY(-2px)}
+.intent-cta{margin:clamp(24px,4vw,44px) 0}
+@media (max-width:640px){.intent-chip{padding:14px}.intent-cta{padding:22px}}
+
+/* ---------- content block gutters ---------- */
+.entity-block{padding-left:clamp(20px,7vw,100px);padding-right:clamp(20px,7vw,100px)}
+.entity-main .entity-block,.entity-body .entity-block{padding-left:0;padding-right:0}
+.entity-block h2{font-size:clamp(1.3rem,2.4vw,1.85rem);letter-spacing:-.03em;margin-bottom:10px}
+.entity-block p{color:var(--muted);line-height:1.85;max-width:70ch}
+.intent-hero{padding-left:clamp(20px,7vw,100px);padding-right:clamp(20px,7vw,100px)}
+.intent-cta{margin-left:clamp(20px,7vw,100px);margin-right:clamp(20px,7vw,100px)}
+.intent-answer{color:var(--ink)!important;max-width:60ch}
+@media (max-width:640px){.entity-block{padding-left:18px;padding-right:18px}.intent-hero{padding-left:18px;padding-right:18px}.intent-cta{margin-left:18px;margin-right:18px}}
