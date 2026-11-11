@@ -110,3 +110,8 @@
 - [x] 首頁加入工具帶、導覽加入配對／比較／指南、頁尾改兩欄
 - [x] 靜態資料檔 `/data/properties.json`、`/data/buildings.json`（瀏覽器本地計算，無 API 成本）
 - [x] 全站 245 頁、內部連結 0 斷鏈、全頁 title 30–60 字、description 50–160 字
+
+## 2026-11-11 GA4 訪客及轉化統計
+- [x] 所有 245 個靜態頁加入 QueenieHub GA4 網站標籤。
+- [x] 加入 `whatsapp_click`、`property_view`、`match_completed`、`budget_calculated`、`compare_started` 及 `brief_printed` 事件；事件只傳送頁面／工具類別資料，不傳送 Google 密碼、API secret 或 WhatsApp 訊息內容。
+- [ ] GA4 累積 24–48 小時後檢查 Realtime、Reports > Acquisition 及 Events；將 `whatsapp_click` 設為 key event（如 GA4 介面需要）。
