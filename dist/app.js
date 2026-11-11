@@ -1,4 +1,12 @@
 (() => {
+  const track = (eventName, params = {}) => {
+    if (typeof window.gtag === 'function') window.gtag('event', eventName, params);
+  };
+  document.addEventListener('click', event => {
+    const link = event.target.closest('a[href*="wa.me"]');
+    if (link) track('whatsapp_click', { page_path: location.pathname, link_text: (link.textContent || '').trim().slice(0, 80) });
+  });
+  if (location.pathname.startsWith('/listing/')) track('property_view', { page_path: location.pathname });
   /* listing filters (home, district, usage, listings pages) */
   const input = document.querySelector('#searchInput');
   const district = document.querySelector('#districtFilter');
@@ -243,6 +251,7 @@
         })
         .sort((a, b) => b.pct - a.pct)
         .slice(0, 6);
+      track('match_completed', { deal: deal || 'any', district: district || 'any', usage: usage || 'any', size: size || 'any', result_count: scored.length });
 
       if (!scored.length) {
         headEl.textContent = '呢個組合暫時冇公開盤源';
@@ -315,6 +324,7 @@
       upfront: document.querySelector('#outUpfront')
     };
     const waEl = document.querySelector('#budgetWa');
+    let budgetTracked = false;
     const calc = () => {
       const f = new FormData(budgetForm);
       const area = Number(f.get('area') || 0);
@@ -334,6 +344,10 @@
       out.deposit.textContent = money(deposit);
       out.commission.textContent = money(commission);
       out.upfront.textContent = money(deposit + commission + rent);
+      if (!budgetTracked && (area > 0 || rate > 0)) {
+        budgetTracked = true;
+        track('budget_calculated', { has_area: area > 0, has_rate: rate > 0 });
+      }
       waEl.href = waLink(`你好，我計過租務預算：\n· 面積：${area.toLocaleString('en-HK')} 呎\n· 呎租：$${rate}\n· 每月租金：${money(rent)}\n· 預算每月總支出（連管理費）：${money(rent + mgmtTotal)}\n想睇下呢個預算有咩盤可以揀，同實際要準備幾多錢。`);
     };
     budgetForm.addEventListener('input', calc);
@@ -405,6 +419,7 @@
         picked = picked.filter(x => x !== input.value);
       }
       update();
+      track('compare_started', { building_count: picked.length });
     });
     search?.addEventListener('input', () => {
       const q = search.value.trim().toLowerCase();
@@ -462,7 +477,7 @@
         <p class="tool-note">呢張清單只係根據公開資料整理，唔構成任何要約。價格及盤況請向代理核實。</p>`;
     };
     grab('/data/properties.json').then(render);
-    document.querySelector('#briefPrint')?.addEventListener('click', () => window.print());
+    document.querySelector('#briefPrint')?.addEventListener('click', () => { track('brief_printed'); window.print(); });
     document.querySelector('#briefClear')?.addEventListener('click', () => {
       localStorage.removeItem(STORE);
       render([]);

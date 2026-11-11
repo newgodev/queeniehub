@@ -324,12 +324,15 @@ function layout({title, description, canonical, body, active='all', jsonLd='', k
       { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: '首頁', item: pageUrl('/') }] }
     ]
   });
+  const ga4 = `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-70S2C66S4E"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-70S2C66S4E');</script>`;
   return `<!doctype html><html lang="zh-HK"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="keywords" content="${esc(keywords)}"><link rel="canonical" href="${canonical}">
 <meta property="og:type" content="${ogType}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${canonical}"><meta property="og:site_name" content="Queenie 商業地產搜尋">${publicOrigin ? `<meta property="og:image" content="${publicOrigin}/og-cover.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="zh_HK">` : ''}
 <meta name="twitter:card" content="${publicOrigin ? 'summary_large_image' : 'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}">${publicOrigin ? `<meta name="twitter:image" content="${publicOrigin}/og-cover.png">` : ''}
-<link rel="stylesheet" href="/styles.css"><script type="application/ld+json">${structured}</script></head><body>
+<link rel="stylesheet" href="/styles.css">${ga4}<script type="application/ld+json">${structured}</script></head><body>
 <a class="skip-link" href="#main">跳至主要內容</a>
 <header class="site-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span><b>QUEENIE</b><small>COMMERCIAL INDEX</small></span></a><nav><a class="${active==='tools'?'active':''}" href="/match/">配對</a><a class="${active==='buildings'?'active':''}" href="/buildings/">大廈</a><a class="${active==='listings'?'active':''}" href="/listings/">盤源</a><a href="/compare/">比較</a><a class="${active==='guides'?'active':''}" href="/guides/">指南</a><a class="nav-cta" href="${whatsappBase}">WhatsApp 查詢</a></nav></header>
 <main id="main">${body}</main>

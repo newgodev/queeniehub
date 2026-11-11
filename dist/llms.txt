@@ -3,9 +3,9 @@
 > 由香港工商物業代理 Queenie 楊佩儀維護嘅公開資料整理入口，以「大廈」為第一層實體，盤源為第二層。資料整理自公開代理頁面，價格及盤況需向代理重新核對。
 
 ## 主要頁面
-- [香港工商大廈索引](https://queeniehub.estate/buildings/): 67 幢大廈，含地址、落成年份、層數、升降機及面積範圍
-- [全部公開盤源](https://queeniehub.estate/listings/): 126 個出售、放租及新盤項目
-- [呎租及呎價參考](https://queeniehub.estate/market/): 按地區及用途嘅中位數，附樣本數
+- [香港工商大廈索引](/buildings/): 67 幢大廈，含地址、落成年份、層數、升降機及面積範圍
+- [全部公開盤源](/listings/): 126 個出售、放租及新盤項目
+- [呎租及呎價參考](/market/): 按地區及用途嘅中位數，附樣本數
 - [原始代理公開頁](https://oir.centanet.com/agent-detail/queenie-yeung/49008/): 資料原始來源
 
 ## 資料說明
